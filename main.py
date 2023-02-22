@@ -6,6 +6,7 @@ from pybricks.parameters import Port, Stop, Direction, Button, Color
 from pybricks.tools import wait, StopWatch, DataLog
 from pybricks.robotics import DriveBase
 from pybricks.media.ev3dev import SoundFile, ImageFile
+from threading import Thread
 
 
 # This program requires LEGO EV3 MicroPython v2.0 or higher.
@@ -21,4 +22,11 @@ motor_a = Motor(Port.A)
 #####--FUNCTIONAL CODE--#####
 
 #run motor at 500 degress pr second
-motor_a.run_target(500,360)
+# motor_a.run_target(500,360)
+
+
+buttons = Button()
+def checking_interrupt():
+    global buttons
+    while buttons.space:
+        motor_a.run_target(500,360)
