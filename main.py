@@ -18,10 +18,15 @@ ev3 = EV3Brick()
 
 # Initialising motor at port a
 motor_a = Motor(Port.A)
+motor_b = Motor(Port.B)
 
 #####--FUNCTIONAL CODE--#####
 
-#run motor at 500 degress pr second
+#move straight for time duration. 
+
+#duration specified in timesp, speed_sp necessary 
+motor_a.speed_sp = 1000
+motor_a.time_sp = 500
 # motor_a.run_target(500,360)
 
 
@@ -29,4 +34,8 @@ buttons = Button()
 def checking_interrupt():
     global buttons
     while buttons.space:
-        motor_a.run_target(500,360)
+        motor_a.run_timed()
+
+motor_b.speed_sp = 1000
+motor_b.time_sp = 500
+motor_b.run_timed()
