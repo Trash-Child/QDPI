@@ -12,9 +12,23 @@ from pybricks.media.ev3dev import SoundFile, ImageFile
 # Click "Open user guide" on the EV3 extension tab for more information.
 
 
-# Create your objects here.
+# Initialising the brick
 ev3 = EV3Brick()
 
+# Initialising motor at port a
+motor_a = Motor(Port.A)
 
-# Write your program here.
-ev3.speaker.beep()
+# Initialising motor at port b
+motor_b = Motor(Port.B)
+
+# Initialising motor at port c
+motor_c = Motor(Port.C)
+
+# Initialising motor at port d
+motor_d = Motor(Port.D)
+
+
+#####--FUNCTIONAL CODE--#####
+
+#run motor at 500 degress pr second
+motor_a.run_target(500)
