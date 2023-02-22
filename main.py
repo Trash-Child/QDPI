@@ -20,10 +20,5 @@ motor_a = Motor(Port.A)
 
 #####--FUNCTIONAL CODE--#####
 
-#move straight for time duration. 
-
-#duration specified in timesp, speed_sp necessary 
-motor_a.speed_sp = 1000
-motor_a.time_sp = 500
-motor_a.run_timed()
-
+#run motor at 500 degress pr second
+motor_a.run_target(500)
