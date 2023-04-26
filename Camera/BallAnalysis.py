@@ -4,22 +4,37 @@ import numpy as np
 # Code made following guide https://www.geeksforgeeks.org/python-opencv-capture-video-from-camera/
 vid = cv2.VideoCapture(0)
 
-def update_continuous_balls(circle, continuous_balls, position_error_margin, size_error_margin):
+def update_continuous_balls(circle, continuous_balls, position_error_margin, size_error_margin, counter_threshold=10):
     x, y, r = circle
-    updated = False
-    for idx, (prev_x, prev_y, prev_r) in enumerate(continuous_balls):
+    updated_continuous_balls = []
+    found_match = False
+
+    for prev_x, prev_y, prev_r, count in continuous_balls:
+
+        # Calculate the difference in position and size between the current circle and the previous circle
         position_diff = np.sqrt((x - prev_x)**2 + (y - prev_y)**2)
         size_diff = abs(r - prev_r)
 
+        # If the difference in position and size is within the error margins, consider it the same ball
         if position_diff <= position_error_margin and size_diff <= size_error_margin:
-            continuous_balls[idx] = (x, y, r)
-            updated = True
-            break
 
-    if not updated:
-        continuous_balls.append((x, y, r))
-    
-    return continuous_balls
+            # If the ball has not been matched before, add it to the list of continuous balls
+            if not found_match:
+                updated_continuous_balls.append((x, y, r, 0))
+                found_match = True
+
+            # If the ball has been matched before, update the continuous ball's position and size    
+            else:
+                updated_continuous_balls.append((prev_x, prev_y, prev_r, count))
+        else:
+            if count < counter_threshold:
+                updated_continuous_balls.append((prev_x, prev_y, prev_r, count + 1))
+            # Else, discard the ball as it has not been matched for a long time
+
+    if not found_match:
+        updated_continuous_balls.append((x, y, r, 0))
+
+    return updated_continuous_balls
 
 
 def camera():
@@ -97,7 +112,7 @@ def camera():
                                     size_error_margin = max(1, size_error_margin - 1)
 
         # Print the continuous balls' positions for debugging
-        print([(x, y) for x, y, _ in continuous_balls])
+        print([(x, y) for x, y, _, _ in continuous_balls])
 
         # Display the frame with detected circles
         cv2.imshow('frame', frame)
