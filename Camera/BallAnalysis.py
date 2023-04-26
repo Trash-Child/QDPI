@@ -1,5 +1,6 @@
 import cv2
 import numpy as np
+import time
 
 # Code made following guide https://www.geeksforgeeks.org/python-opencv-capture-video-from-camera/
 vid = cv2.VideoCapture(0)
@@ -113,6 +114,39 @@ def camera():
 
         # Print the continuous balls' positions for debugging
         print([(x, y) for x, y, _, _ in continuous_balls])
+        
+        # Define lower and upper color threshold values for red and blue circles
+        red_lower = (0, 0, 150)
+        red_upper = (50, 50, 255)
+        blue_lower = (100, 0, 0) #THESE RANGES NEED ALOT OF ADJUSTMENT
+        blue_upper = (255, 255, 255)
+
+        # Find red circles
+        red_mask = cv2.inRange(frame, red_lower, red_upper)
+        red_circles = cv2.HoughCircles(red_mask, cv2.HOUGH_GRADIENT, dp=1,
+                                    minDist=20, param1=50, param2=30, minRadius=10, maxRadius=30)
+        if red_circles is not None:
+            red_circles = np.round(red_circles[0, :]).astype("int")
+            for (x, y, r) in red_circles:
+                cv2.circle(frame, (x, y), r, (0, 255, 255), 2)
+                cv2.putText(frame, "Red Robot", (x-r, y-r), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 255), 2)
+                
+                if time.time() % 0.5 == 0:
+                    rint("Red Robot:", x, y)
+
+        # Find blue circles
+        blue_mask = cv2.inRange(frame, blue_lower, blue_upper)
+        # cv2.imshow("Blue Mask", blue_mask) # THIS LINE OF CODE CAN BE DELETED, I AM JUST USING IT FOR TESTING
+        blue_circles = cv2.HoughCircles(blue_mask, cv2.HOUGH_GRADIENT, dp=1, minDist=20, param1=50, param2=30, minRadius=1, maxRadius=999999)
+        if blue_circles is not None:
+            blue_circles = np.round(blue_circles[0, :]).astype("int")
+            for (x, y, r) in blue_circles:
+                cv2.circle(frame, (x, y), r, (255, 0, 0), 2)
+                cv2.putText(frame, "Blue Robot", (x-r, y-r), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 2)
+                
+                if time.time() % 0.5 == 0:
+                    print("Blue Robot:", x, y)
+
 
         # Display the frame with detected circles
         cv2.imshow('frame', frame)
