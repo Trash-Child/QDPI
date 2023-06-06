@@ -20,10 +20,13 @@ ev3 = EV3Brick()
 #Click "Open user guide" on the EV3 extension tab for more information.
 #Initialising motor at ports a+b
 #r is right, l is left
+
 motor_r = Motor(Port.A)
 motor_l = Motor(Port.B)
 motor_pickupWheels = Motor(Port.C)
 motor_v = Motor(Port.D)
+gyro = GyroSensor(Port.S1)
+
 
 #Drivebase has LEFT motor first!
 qdpi = DriveBase(motor_l,motor_r,wheel_diameter=32.5,axle_track=204.5)
@@ -45,7 +48,9 @@ drive = 1
 def qdpidrive(drive):
 
     while drive==1: 
-        qdpi.drive(150,0)
+       #gyro correction along with driving. 
+        correction = (0 - gyro.angle())*1
+        qdpi.drive(150,correction)
         break
 
 
@@ -59,13 +64,13 @@ def qdpiopen():
     motor_v.run(100)
     wait(1000)
     motor_v.stop()
-
-
    
 
 ##run rotate program until correctly placed
 
 motor_pickupWheels.run(500)
+#gyro reset angle!! this has to run first
+gyro.reset_angle(0)
 
 qdpidrive(drive=1)
 wait(10000)
