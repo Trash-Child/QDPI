@@ -39,16 +39,17 @@ def update_continuous_balls(circle, continuous_balls, position_error_margin, siz
 
 
 def detect_walls(frame):
+    # Convert frame to grayscale for line detection
+    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    
     # Apply Canny edge detection
-    edges = cv2.Canny(frame, 50, 150, apertureSize=3)
+    edges = cv2.Canny(gray, 50, 150, apertureSize=3)
 
     # Apply Hough Line Transform
     lines = cv2.HoughLines(edges, 1, np.pi / 180, 200)
     walls = []
     if lines is not None:
         for rho, theta in lines[:,0]:
-            # rho is distance from the coordinate origin (top-left corner)
-            # theta is line rotation angle in radians
             a = np.cos(theta) # x part of unit vector
             b = np.sin(theta) # y part of unit vector
             x0 = a * rho # x coordinate for line's intersection with y-axis
@@ -63,10 +64,11 @@ def detect_walls(frame):
             # Add the wall's endpoints to the array
             walls.append(((x1, y1), (x2, y2)))
 
-            # Draw the line
+            # Draw the line on the colored frame
             cv2.line(frame, (x1, y1), (x2, y2), (0, 0, 255), 2)
     
     return frame, walls
+
 
 
 
@@ -80,20 +82,18 @@ def camera():
     frame_counter = 0
     warm_up_period = 30
 
-
     while True:
         ret, frame = vid.read()
-        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY) #convert to grayscale
-        gray = cv2.GaussianBlur(gray, (5, 5), 0) #reduce noise
-        
-        gray, walls = detect_walls(gray)
+        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY) # convert to grayscale
+        gray = cv2.GaussianBlur(gray, (5, 5), 0) # reduce noise
+
+        frame, walls = detect_walls(frame)  # Use original colored frame for wall detection
 
         # Print walls
         for wall in walls:
             print("Wall detected from point {} to point {}".format(*wall))
 
-
-        # detect circles
+        # detect circles in the gray frame
         circles = cv2.HoughCircles(gray, cv2.HOUGH_GRADIENT, 1, 20, param1=50, param2=10, minRadius=5, maxRadius=10)
 
         if circles is not None:
