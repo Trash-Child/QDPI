@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 import time
 
-# Code made following guide https://www.geeksforgeeks.org/python-opencv-capture-video-from-camera/
+
 vid = cv2.VideoCapture(0)
 
 def update_continuous_balls(circle, continuous_balls, position_error_margin, size_error_margin, counter_threshold=10, no_match_threshold=10):
@@ -32,6 +32,38 @@ def update_continuous_balls(circle, continuous_balls, position_error_margin, siz
     return updated_continuous_balls
 
 
+def locateOrangeBall(frame):
+    lower_orange = np.array([10, 100, 100])
+    upper_orange = np.array([20, 255, 255])
+
+    best_location = []
+    best_area = 0
+    best_circularity = 0
+
+    hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+    mask = cv2.inRange(hsv, lower_orange, upper_orange)
+    contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    
+    for cnt in contours:
+        area = cv2.contourArea(cnt)
+        perimeter = cv2.arcLength(cnt, True)
+        if perimeter == 0:
+            continue
+        circularity = 4*np.pi*(area / (perimeter**2))
+        if area > best_area and circularity > best_circularity:
+            M = cv2.moments(cnt)
+            if M["m00"] != 0:
+                cX = int(M["m10"] / M["m00"])
+                cY = int(M["m01"] / M["m00"])
+                best_location = cX, cY
+                best_area = area
+                best_circularity = circularity
+
+    return best_location
+
+
+
+
 
 def camera():
     continuous_balls = []
@@ -59,7 +91,7 @@ def camera():
                 cv2.circle(frame, (cX, cY), 2, (0, 0, 255), 3)
 
         print([(x, y) for x, y, _, _, _ in continuous_balls])
-
+        print("Orange:", locateOrangeBall(frame))
         cv2.imshow('frame', frame)
 
         key = cv2.waitKey(1) & 0xFF
@@ -68,6 +100,5 @@ def camera():
 
     vid.release()
     cv2.destroyAllWindows()
-
 
 camera()
