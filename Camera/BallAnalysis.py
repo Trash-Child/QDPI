@@ -38,6 +38,26 @@ def update_continuous_balls(circle, continuous_balls, position_error_margin, siz
     return updated_continuous_balls
 
 
+
+def line_intersection(line1, line2):
+    # Unpack lines
+    x1, y1, x2, y2 = line1
+    x3, y3, x4, y4 = line2
+
+    # Compute determinants
+    det1 = (x1 - x2) * (y3 - y4)
+    det2 = (y1 - y2) * (x3 - x4)
+    d = det1 - det2
+
+    if d != 0:  # lines are not parallel
+        px = ((x1*y2 - y1*x2) * (x3 - x4) - (x1 - x2) * (x3*y4 - y3*x4)) / d
+        py = ((x1*y2 - y1*x2) * (y3 - y4) - (y1 - y2) * (x3*y4 - y3*x4)) / d
+        return (px, py)
+    else:
+        return None
+
+
+
 def detect_walls(frame):
     # Convert frame to grayscale for line detection
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
@@ -46,7 +66,7 @@ def detect_walls(frame):
     edges = cv2.Canny(gray, 50, 150, apertureSize=3)
 
     # Apply Probabilistic Hough Line Transform
-    lines = cv2.HoughLinesP(edges, 1, np.pi / 180, 100, minLineLength=100, maxLineGap=10)
+    lines = cv2.HoughLinesP(edges, 1, np.pi / 180, 10, minLineLength=100, maxLineGap=10)
     walls = []
     if lines is not None:
         for line in lines:
@@ -58,7 +78,26 @@ def detect_walls(frame):
             # Draw the line on the colored frame
             cv2.line(frame, (x1, y1), (x2, y2), (0, 0, 255), 2)
     
-    return frame, walls
+    intersections = []
+
+    if lines is not None:
+        for i in range(len(lines)):
+            for j in range(i + 1, len(lines)):
+                intersection = line_intersection(lines[i][0], lines[j][0])
+                # check if intersection is within frame
+                if intersection is not None and 0 <= intersection[0] < frame.shape[1] and 0 <= intersection[1] < frame.shape[0]:
+                    intersections.append(intersection)
+
+    # find corner points
+    corners = []
+    if intersections:
+        nw = min(intersections, key=lambda p: p[0] + p[1])
+        ne = max(intersections, key=lambda p: p[0] - p[1])
+        sw = max(intersections, key=lambda p: p[1] - p[0])
+        se = max(intersections, key=lambda p: p[0] + p[1])
+        corners = [nw, ne, sw, se]
+    
+    return frame, walls, corners
 
 
 
@@ -78,7 +117,10 @@ def camera():
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY) # convert to grayscale
         gray = cv2.GaussianBlur(gray, (5, 5), 0) # reduce noise
 
-        frame, walls = detect_walls(frame)  # Use original colored frame for wall detection
+        frame, walls, corners = detect_walls(frame)  # Use original colored frame for wall detection
+
+        # Print corners
+        print("Corners detected at:", corners)
 
         # Print walls
         for wall in walls:
@@ -137,6 +179,7 @@ def camera():
         # Press 'q' key to stop display
         key = cv2.waitKey(1) & 0xFF
         if key == ord('q'):
+            print(corners)
             break
 
         # Increase position error margin with 'w' key
