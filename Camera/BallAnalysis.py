@@ -63,6 +63,47 @@ def locateOrangeBall(frame):
 
 
 
+def locateColoredBall(frame, lower_color, upper_color):
+    best_location = []
+    best_area = 0
+    best_circularity = 0
+
+    hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+    mask = cv2.inRange(hsv, lower_color, upper_color)
+    contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    
+    for cnt in contours:
+        area = cv2.contourArea(cnt)
+        perimeter = cv2.arcLength(cnt, True)
+        if perimeter == 0:
+            continue
+        circularity = 4*np.pi*(area / (perimeter**2))
+        if area > best_area and circularity > best_circularity:
+            M = cv2.moments(cnt)
+            if M["m00"] != 0:
+                cX = int(M["m10"] / M["m00"])
+                cY = int(M["m01"] / M["m00"])
+                best_location = cX, cY
+                best_area = area
+                best_circularity = circularity
+
+    return best_location
+
+
+def locateGreenBall(frame):
+    lower_green = np.array([36, 50, 50])
+    upper_green = np.array([86, 255, 255])
+
+    return locateColoredBall(frame, lower_green, upper_green)
+
+
+
+def locateBlueBall(frame):
+    lower_blue = np.array([80, 50, 50])  # Lower the hue to target lighter blue colors
+    upper_blue = np.array([100, 255, 255])  # You can adjust this value depending on the exact shade you're trying to detect
+
+    return locateColoredBall(frame, lower_blue, upper_blue)
+
 
 
 def camera():
@@ -73,7 +114,7 @@ def camera():
     while True:
         ret, frame = vid.read()
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-        _, thresh = cv2.threshold(gray, 220, 255, cv2.THRESH_BINARY) # Filter out low light pixels
+        _, thresh = cv2.threshold(gray, 220, 255, cv2.THRESH_BINARY)  # Filter out low light pixels
 
         contours, _ = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
         
@@ -90,8 +131,19 @@ def camera():
                 cv2.circle(frame, (cX, cY), int(r), (0, 255, 0), 2)
                 cv2.circle(frame, (cX, cY), 2, (0, 0, 255), 3)
 
+        # Find green and blue balls, and draw a circle around them
+        green_ball_location = locateGreenBall(frame)
+        if green_ball_location:
+            cv2.circle(frame, green_ball_location, 10, (0, 255, 0), 2)
+
+        blue_ball_location = locateBlueBall(frame)
+        if blue_ball_location:
+            cv2.circle(frame, blue_ball_location, 10, (255, 0, 0), 2)
+
         print([(x, y) for x, y, _, _, _ in continuous_balls])
         print("Orange:", locateOrangeBall(frame))
+        print("Green:", locateGreenBall(frame))
+        print("Blue:", locateBlueBall(frame))
         cv2.imshow('frame', frame)
 
         key = cv2.waitKey(1) & 0xFF
@@ -100,5 +152,6 @@ def camera():
 
     vid.release()
     cv2.destroyAllWindows()
+
 
 camera()
