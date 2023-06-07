@@ -63,6 +63,72 @@ def locateOrangeBall(frame):
 
 
 
+def locateColoredBall(frame, lower_color, upper_color):
+    # Initialize variables to store the best location, area, and circularity
+    best_location = []
+    best_area = 0
+    best_circularity = 0
+
+    # Convert the image from BGR color space to HSV color space
+    hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+    
+    # Create a binary mask where the pixels within the specified color range are set to 1 and others are set to 0
+    mask = cv2.inRange(hsv, lower_color, upper_color)
+    
+    # Find contours in the mask image
+    contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    
+    # Iterate over the found contours
+    for cnt in contours:
+        # Calculate the area of the current contour
+        area = cv2.contourArea(cnt)
+        
+        # Calculate the perimeter (also known as the arc length) of the contour
+        perimeter = cv2.arcLength(cnt, True)
+        
+        # Avoid division by zero
+        if perimeter == 0:
+            continue
+        
+        # Calculate the circularity of the contour, which is defined as the ratio of the area to the square of the perimeter
+        circularity = 4*np.pi*(area / (perimeter**2))
+        
+        # If the current contour has a larger area and better circularity than the best found so far, update the best contour
+        if area > best_area and circularity > best_circularity:
+            # Compute the moments of the contour which can be used to compute the centroid or “center of mass” of the contour
+            M = cv2.moments(cnt)
+            
+            # Avoid division by zero
+            if M["m00"] != 0:
+                # Calculate the x and y coordinates of the center of the contour
+                cX = int(M["m10"] / M["m00"])
+                cY = int(M["m01"] / M["m00"])
+                
+                # Update the best location, area, and circularity
+                best_location = cX, cY
+                best_area = area
+                best_circularity = circularity
+
+    # Return the center of the best contour
+    return best_location
+
+ 
+
+def locateGreenBall(frame):
+    lower_green = np.array([36, 50, 50])
+    upper_green = np.array([86, 255, 255])
+
+    return locateColoredBall(frame, lower_green, upper_green)
+
+
+
+def locateBlueBall(frame):
+    lower_blue = np.array([80, 20, 50])  # Lower the saturation to target lighter blue colors
+    upper_blue = np.array([130, 255, 255])  # You can adjust this value depending on the exact shade you're trying to detect
+
+    return locateColoredBall(frame, lower_blue, upper_blue)
+
+
 
 
 def camera():
@@ -73,7 +139,7 @@ def camera():
     while True:
         ret, frame = vid.read()
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-        _, thresh = cv2.threshold(gray, 220, 255, cv2.THRESH_BINARY) # Filter out low light pixels
+        _, thresh = cv2.threshold(gray, 220, 255, cv2.THRESH_BINARY)  # Filter out low light pixels
 
         contours, _ = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
         
@@ -90,8 +156,19 @@ def camera():
                 cv2.circle(frame, (cX, cY), int(r), (0, 255, 0), 2)
                 cv2.circle(frame, (cX, cY), 2, (0, 0, 255), 3)
 
+        # Find green and blue balls, and draw a circle around them
+        green_ball_location = locateGreenBall(frame)
+        if green_ball_location:
+            cv2.circle(frame, green_ball_location, 10, (0, 255, 0), 2)
+
+        blue_ball_location = locateBlueBall(frame)
+        if blue_ball_location:
+            cv2.circle(frame, blue_ball_location, 10, (0, 0, 255), 2)
+
         print([(x, y) for x, y, _, _, _ in continuous_balls])
         print("Orange:", locateOrangeBall(frame))
+        print("Green:", locateGreenBall(frame))
+        print("Blue:", locateBlueBall(frame))
         cv2.imshow('frame', frame)
 
         key = cv2.waitKey(1) & 0xFF
@@ -100,5 +177,6 @@ def camera():
 
     vid.release()
     cv2.destroyAllWindows()
+
 
 camera()
