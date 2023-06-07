@@ -62,7 +62,7 @@ def detect_and_draw_rectangle(frame):
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
     # Apply edge detection
-    edged = cv2.Canny(gray, 50, 100)
+    edged = cv2.Canny(gray, 55, 165)
 
     # Perform a dilation and erosion to close gaps in between object edges
     edged = cv2.dilate(edged, None, iterations=1)
@@ -72,7 +72,7 @@ def detect_and_draw_rectangle(frame):
     contours, _ = cv2.findContours(edged.copy(), cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
 
     # Define a tolerance level for angles
-    angle_tolerance = 15
+    angle_tolerance = 10
 
     # Initialize a list to store rectangle corners
     rectangles = []
@@ -121,7 +121,7 @@ def camera():
     while True:
         ret, frame = vid.read()
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY) # convert to grayscale
-        gray = cv2.GaussianBlur(gray, (5, 5), 0) # reduce noise
+        gray = cv2.GaussianBlur(gray, (35, 35), 0) # reduce noise
 
         frame, rectangles = detect_and_draw_rectangle(frame)
 
