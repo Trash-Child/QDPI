@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 import time
-
+import threading
 
 vid = cv2.VideoCapture(0)
 
@@ -130,13 +130,15 @@ def locateBlueBall(frame):
 
 
 
+closest_ball = [None]
 
 def camera():
+    global closest_ball
     continuous_balls = []
     position_error_margin = 25
     size_error_margin = 3
 
-    while True:
+    for i in range(1):
         ret, frame = vid.read()
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         _, thresh = cv2.threshold(gray, 220, 255, cv2.THRESH_BINARY)  # Filter out low light pixels
@@ -155,6 +157,9 @@ def camera():
                 continuous_balls = update_continuous_balls((cX, cY, r), continuous_balls, position_error_margin, size_error_margin)
                 cv2.circle(frame, (cX, cY), int(r), (0, 255, 0), 2)
                 cv2.circle(frame, (cX, cY), 2, (0, 0, 255), 3)
+                print("camera: closest ball = ", closest_ball)
+                if closest_ball[0] and cX == closest_ball[0][0] and cY == closest_ball[0][1]:
+                    cv2.circle(frame, (cX, cY), int(r) + 10, (255, 0, 0), 4)  # Draw an extra circle around the closest ball
 
         # Find green and blue balls, and draw a circle around them
         green_ball_location = locateGreenBall(frame)
@@ -164,13 +169,43 @@ def camera():
         blue_ball_location = locateBlueBall(frame)
         if blue_ball_location:
             cv2.circle(frame, blue_ball_location, 10, (0, 0, 255), 2)
-
-        print([(x, y) for x, y, _, _, _ in continuous_balls])
-        print("Orange:", locateOrangeBall(frame))
-        print("Green:", locateGreenBall(frame))
-        print("Blue:", locateBlueBall(frame))
         cv2.imshow('frame', frame)
 
+        orange_ball_location = locateOrangeBall(frame)
+
+    return continuous_balls, orange_ball_location, green_ball_location, blue_ball_location
+
+
+def locate_nearest_ball():
+    global closest_ball
+    while True:
+        continuous_balls, orange_ball_location, green_dot, blue_dot = camera()
+        # define robot as the middle of the green dot and blue dot
+        if green_dot and blue_dot:
+            robot = ((green_dot[0] + blue_dot[0]) / 2, (green_dot[1] + blue_dot[1]) / 2)
+        else:
+            print("Green dot or blue dot not found!")
+            return None
+
+        # initial closest distance set to a large number
+        closest_distance = float('inf')
+        closest_ball = None
+
+        # check each ball in continuous_balls to find the closest
+        for ball in continuous_balls:
+            distance = ((robot[0] - ball[0])**2 + (robot[1] - ball[1])**2)**0.5
+            if distance < closest_distance:
+                closest_distance = distance
+                closest_ball[0] = ball
+
+        # check orange ball if exists
+        if orange_ball_location:
+            distance = ((robot[0] - orange_ball_location[0])**2 + (robot[1] - orange_ball_location[1])**2)**0.5
+            if distance < closest_distance:
+                closest_distance = distance
+                closest_ball[0] = orange_ball_location
+        
+        
         key = cv2.waitKey(1) & 0xFF
         if key == ord('q'):
             break
@@ -178,5 +213,11 @@ def camera():
     vid.release()
     cv2.destroyAllWindows()
 
+    # return closest ball
+    return closest_ball
 
-camera()
+camera_thread = threading.Thread(target=camera)
+
+camera_thread.start()
+locate_nearest_ball()
+
