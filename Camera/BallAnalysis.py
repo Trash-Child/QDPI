@@ -112,7 +112,7 @@ def locateColoredBall(frame, lower_color, upper_color):
     # Return the center of the best contour
     return best_location
 
-
+ 
 
 def locateGreenBall(frame):
     lower_green = np.array([36, 50, 50])
@@ -163,7 +163,7 @@ def camera():
 
         blue_ball_location = locateBlueBall(frame)
         if blue_ball_location:
-            cv2.circle(frame, blue_ball_location, 10, (255, 0, 0), 2)
+            cv2.circle(frame, blue_ball_location, 10, (0, 0, 255), 2)
 
         print([(x, y) for x, y, _, _, _ in continuous_balls])
         print("Orange:", locateOrangeBall(frame))
