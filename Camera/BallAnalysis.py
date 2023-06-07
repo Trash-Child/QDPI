@@ -64,30 +64,54 @@ def locateOrangeBall(frame):
 
 
 def locateColoredBall(frame, lower_color, upper_color):
+    # Initialize variables to store the best location, area, and circularity
     best_location = []
     best_area = 0
     best_circularity = 0
 
+    # Convert the image from BGR color space to HSV color space
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+    
+    # Create a binary mask where the pixels within the specified color range are set to 1 and others are set to 0
     mask = cv2.inRange(hsv, lower_color, upper_color)
+    
+    # Find contours in the mask image
     contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     
+    # Iterate over the found contours
     for cnt in contours:
+        # Calculate the area of the current contour
         area = cv2.contourArea(cnt)
+        
+        # Calculate the perimeter (also known as the arc length) of the contour
         perimeter = cv2.arcLength(cnt, True)
+        
+        # Avoid division by zero
         if perimeter == 0:
             continue
+        
+        # Calculate the circularity of the contour, which is defined as the ratio of the area to the square of the perimeter
         circularity = 4*np.pi*(area / (perimeter**2))
+        
+        # If the current contour has a larger area and better circularity than the best found so far, update the best contour
         if area > best_area and circularity > best_circularity:
+            # Compute the moments of the contour which can be used to compute the centroid or “center of mass” of the contour
             M = cv2.moments(cnt)
+            
+            # Avoid division by zero
             if M["m00"] != 0:
+                # Calculate the x and y coordinates of the center of the contour
                 cX = int(M["m10"] / M["m00"])
                 cY = int(M["m01"] / M["m00"])
+                
+                # Update the best location, area, and circularity
                 best_location = cX, cY
                 best_area = area
                 best_circularity = circularity
 
+    # Return the center of the best contour
     return best_location
+
 
 
 def locateGreenBall(frame):
@@ -99,10 +123,11 @@ def locateGreenBall(frame):
 
 
 def locateBlueBall(frame):
-    lower_blue = np.array([80, 50, 50])  # Lower the hue to target lighter blue colors
-    upper_blue = np.array([100, 255, 255])  # You can adjust this value depending on the exact shade you're trying to detect
+    lower_blue = np.array([80, 20, 50])  # Lower the saturation to target lighter blue colors
+    upper_blue = np.array([130, 255, 255])  # You can adjust this value depending on the exact shade you're trying to detect
 
     return locateColoredBall(frame, lower_blue, upper_blue)
+
 
 
 
