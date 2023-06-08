@@ -50,7 +50,7 @@ def locateOrangeBall(frame):
 
         circularity = 4*np.pi*(area / (perimeter**2))
 
-        if area =< best_area and circularity =< best_circularity:
+        if area <= best_area and circularity <= best_circularity:
             continue
         
         M = cv2.moments(cnt)
@@ -129,8 +129,9 @@ def analyseFrame(frame):
     position_error_margin = 25
     size_error_margin = 3
 
-    gray = cv2.threshold(frame, cv2.COLOR_BGR2GRAY)
+    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     _, thresh = cv2.threshold(gray, 220, 255, cv2.THRESH_BINARY)  # Filter out low light pixels
+
 
     contours, _ = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
         
@@ -174,13 +175,13 @@ def locate_nearest_ball(continuous_balls, orange_ball_location, green_dot, blue_
     robot = ((green_dot[0] + blue_dot[0]) / 2, (green_dot[1] + blue_dot[1]) / 2)
     
     closest_distance = float('inf')
-    closest_ball = None
+    closest_ball = [None]
     
     for ball in continuous_balls:
         distance = ((robot[0] - ball[0])**2 + (robot[1] - ball[1])**2)**0.5
         if distance < closest_distance:
             closest_distance = distance
-            closest_ball = ball
+            closest_ball[0] = ball
     # check orange ball if exists
     if not orange_ball_location:
         return closest_ball
@@ -188,12 +189,9 @@ def locate_nearest_ball(continuous_balls, orange_ball_location, green_dot, blue_
     distance = ((robot[0] - orange_ball_location[0])**2 + (robot[1] - orange_ball_location[1])**2)**0.5
     if distance < closest_distance:
         closest_distance = distance
-        closest_ball = orange_ball_location
+        closest_ball[0] = orange_ball_location
 
     return closest_ball
-
-camera_thread = threading.Thread(target=camera)
-camera_thread.start()
 
 def main():
     vid = cv2.VideoCapture(0)
@@ -201,10 +199,11 @@ def main():
     while True:
         ret, frame = vid.read()
 
-        analysed_frame = analyseFrame(frame)
-        target = locate_nearest_ball(analysed_frame)
-        if target is not None:
-            cv2.circle(frame, target, 10, (255, 255, 0), 2)
+        white_balls, orange, green, blue = analyseFrame(frame)
+        target = locate_nearest_ball(white_balls, orange, green, blue)
+        if target is not None and len(target) > 1:
+            x, y = target[:2]
+            cv2.circle(frame, (x, y), 10, (255, 255, 0), 2)
 
         cv2.imshow('frame', frame)
 
