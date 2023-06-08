@@ -193,7 +193,6 @@ def locate_nearest_ball(continuous_balls, orange_ball_location, green_dot, blue_
     return closest_ball
 
 camera_thread = threading.Thread(target=camera)
-
 camera_thread.start()
 
 def main():
@@ -215,3 +214,6 @@ def main():
     
     vid.release()
     cv2.destroyAllWindows()
+
+if __name__ == "__main__":
+    main()
