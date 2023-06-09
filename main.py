@@ -45,7 +45,9 @@ def handle_client(server_socket):
     return reply
 
 def handle_data(data):
-    if data <= 5:
+    if data == 404:
+        print("An error occured")
+    elif data <= 5:
         correction = (0 - gyro.angle())*1
         qdpi.drive(150, correction) # 150 = base speed
     

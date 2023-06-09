@@ -1,4 +1,4 @@
-from Camera.BallAnalysis import runCamera, analyseFrame, locate_nearest_ball
+from Camera.BallAnalysis import analyseFrame, locate_nearest_ball
 import cv2
 import math
 
@@ -22,7 +22,7 @@ def calculateAngle(p1, p2, p3):
 
 def calculateCommand(frame):
     target, robot, green = getImportantInfo(frame)
-    if target is None:
+    if target is None or robot is None or green is None:
         return 0
     
     angle = calculateAngle(green, robot, target)
@@ -30,5 +30,6 @@ def calculateCommand(frame):
     if abs(angle) > 5: # error margin
         return angle
         
-    else return 1
+    else:
+        return 1
 

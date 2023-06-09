@@ -129,7 +129,9 @@ def analyseFrame(frame):
     continuous_balls = []
     position_error_margin = 25
     size_error_margin = 3
-
+    orange_ball_location = None
+    blue_ball_location = None
+    green_ball_location = None
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     _, thresh = cv2.threshold(gray, 220, 255, cv2.THRESH_BINARY)  # Filter out low light pixels
 
@@ -193,27 +195,3 @@ def locate_nearest_ball(continuous_balls, orange_ball_location, green_dot, blue_
         closest_ball[0] = orange_ball_location
 
     return closest_ball, robot 
-
-def runCamera():
-    vid = cv2.VideoCapture(0)
-
-    while True:
-        ret, frame = vid.read()
-
-        white_balls, orange, green, blue = analyseFrame(frame)
-        target = locate_nearest_ball(white_balls, orange, green, blue)
-        if target is not None and len(target) > 1:
-            x, y = target[:2]
-            cv2.circle(frame, (x, y), 10, (255, 255, 0), 2)
-
-        cv2.imshow('frame', frame)
-
-        key = cv2.waitKey(1) & 0xFF
-        if key == ord('q'):
-            break
-    
-    vid.release()
-    cv2.destroyAllWindows()
-
-if __name__ == "__runCamera__":
-    runCamera()
