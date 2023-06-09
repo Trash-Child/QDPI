@@ -192,9 +192,9 @@ def locate_nearest_ball(continuous_balls, orange_ball_location, green_dot, blue_
         closest_distance = distance
         closest_ball[0] = orange_ball_location
 
-    return closest_ball
+    return closest_ball, robot 
 
-def main():
+def runCamera():
     vid = cv2.VideoCapture(0)
 
     while True:
@@ -215,5 +215,5 @@ def main():
     vid.release()
     cv2.destroyAllWindows()
 
-if __name__ == "__main__":
-    main()
+if __name__ == "__runCamera__":
+    runCamera()

@@ -10,7 +10,14 @@ import math
 import socket
 
 ev3 = brick()
+motor_r = Motor(Port.A)
+motor_l = Motor(Port.B)
+motor_frontWheels = Motor(Port.C)
 motor_v = Motor(Port.D)
+gyro = GyroSensor(Port.S1)
+
+qdpi = DriveBase(motor_l, motor_r, wheel_diameter = 32.5, axle_track = 204.5)
+
 
 def start_server(port):
     print("Starting server...")
@@ -38,11 +45,13 @@ def handle_client(server_socket):
     return reply
 
 def handle_data(data):
-    if data == '1':
-        motor_v.run(100)
-        wait(1000)
-        motor_v.stop()
-
+    if data <= 5:
+        correction = (0 - gyro.angle())*1
+        qdpi.drive(150, correction) # 150 = base speed
+    
+    if data > 5:
+        qdpi.drive(0,data)
+    
 
 def run_server():
     port = 1234
@@ -50,6 +59,8 @@ def run_server():
 
     while True:  # Continuously accept new connections.
         data = handle_client(server_socket)
+        motor_frontWheels.run(500)
+        gyro.reset_angle(0)
         handle_data(data)
         print('Server received:', data)
 
