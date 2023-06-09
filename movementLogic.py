@@ -6,11 +6,13 @@ import math
 def getImportantInfo(frame):
     white_balls, orange, green, blue = analyseFrame(frame)
     target, robot = locate_nearest_ball(white_balls, orange, green, blue)
+    if target is None or len(target) <= 1 or robot is None or green is None:
+        return None, None, None
 
-    if target is not None and len(target) > 1:
-        x, y = target[:2]
-        cv2.circle(frame, (x, y), 10, (255, 255, 0), 2)
-        return target, robot, green
+    x, y = target[:2]
+    cv2.circle(frame, (x, y), 10, (255, 255, 0), 2)
+    return target, robot, green   
+    
 
 def calculateAngle(p1, p2, p3):
     dx21 = p2[0] - p1[0]
