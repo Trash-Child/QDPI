@@ -28,10 +28,7 @@ def start_server(port):
     print("Server started.")
     return server_socket
 
-def handle_client(server_socket):
-    print("Waiting for a client...")
-    client_socket, client_address = server_socket.accept()
-    print("Client connected:", client_address)
+def handle_client(client_socket):
     data = client_socket.recv(1024)
     reply = data.decode()
     try:
@@ -41,10 +38,13 @@ def handle_client(server_socket):
             message = message[bytes_sent:]
     except Exception as e:
         print('Error: {}'.format(e))
-    client_socket.close()
+    client_socket.close()  # Close the client socket after handling the data
     return reply
 
+    
+
 def handle_data(data):
+    data = int(data)
     if data == 404:
         print("An error occured")
     elif data <= 5:
@@ -52,7 +52,7 @@ def handle_data(data):
         qdpi.drive(150, correction) # 150 = base speed
     
     if data > 5:
-        qdpi.drive(0,data)
+        qdpi.drive(0,data) # turn
     
 
 def run_server():
@@ -60,11 +60,14 @@ def run_server():
     server_socket = start_server(port)
 
     while True:  # Continuously accept new connections.
-        data = handle_client(server_socket)
+        client_socket, client_address = server_socket.accept()  # Wait for a new client connection
+        print("Client connected:", client_address)
+        data = handle_client(client_socket)
         motor_frontWheels.run(500)
         gyro.reset_angle(0)
         handle_data(data)
         print('Server received:', data)
+
 
 print("Starting server thread...")
 server_thread = Thread(target=run_server)
