@@ -42,9 +42,10 @@ def main():
         while True:
             ret, frame = vid.read()
             cmd = calculateCommand(frame)
+            print("calc cmd: ", cmd)
             reply = send_data(client_socket, cmd)
             print('Received:', reply)
-
+            cv2.imshow('frame', frame)
             key = cv2.waitKey(1) & 0xFF
             if key == ord('q'):
                 break

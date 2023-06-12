@@ -51,7 +51,7 @@ def handle_data(data):
         correction = (0 - gyro.angle())*1
         qdpi.drive(150, correction) # 150 = base speed
     
-    if data > 5:
+    elif data > 5:
         qdpi.drive(0,data) # turn
     
 

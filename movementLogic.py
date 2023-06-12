@@ -15,20 +15,22 @@ def getImportantInfo(frame):
     
 
 def calculateAngle(p1, p2, p3):
+    print("calcAngle debug")
     dx21 = p2[0] - p1[0]
     dy21 = p2[1] - p1[1]
     dx32 = p3[0] - p2[0]
     dy32 = p3[1] - p2[1]
     angle = math.atan2(dy32, dx32) - math.atan2(dy21, dx21)
+    print(math.degress(angle))
     return math.degrees(angle)
 
 def calculateCommand(frame):
     target, robot, green = getImportantInfo(frame)
     if target is None or robot is None or green is None:
-        return 0
+        return 404
     
     angle = calculateAngle(green, robot, target)
-
+    print("Printing angle: ", angle)
     if abs(angle) > 5: # error margin
         return angle
         
