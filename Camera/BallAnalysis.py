@@ -62,7 +62,7 @@ def detect_and_draw_rectangle(frame):
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
     # Apply edge detection
-    edged = cv2.Canny(gray, 55, 165)
+    edged = cv2.Canny(gray, 30, 60)
 
     # Perform a dilation and erosion to close gaps in between object edges
     edged = cv2.dilate(edged, None, iterations=1)
@@ -80,7 +80,7 @@ def detect_and_draw_rectangle(frame):
     # Iterate over all found contours
     for cnt in contours:
         # Approximate contour to a polygon
-        epsilon = 0.02*cv2.arcLength(cnt, True)
+        epsilon = 0.02 * cv2.arcLength(cnt, True)
         approx = cv2.approxPolyDP(cnt, epsilon, True)
 
         # If the polygon has four points, it is assumed to be a rectangle
@@ -90,8 +90,8 @@ def detect_and_draw_rectangle(frame):
                 # Calculate the angle of the corner
                 p0, p1, p2 = approx[i - 1], approx[i], approx[(i + 1) % 4]
                 angle = abs(math.degrees(math.atan2(p2[0][1] - p1[0][1], p2[0][0] - p1[0][0]) -
-                            math.atan2(p0[0][1] - p1[0][1], p0[0][0] - p1[0][0])))
-
+                                         math.atan2(p0[0][1] - p1[0][1], p0[0][0] - p1[0][0])))
+                
                 # Adjust angles to be between 0 and 180
                 angle = angle if angle < 180 else 360 - angle
 
@@ -108,6 +108,57 @@ def detect_and_draw_rectangle(frame):
     return frame, rectangles
 
 
+def calculate_vectors(rectangles):
+    vectors = []
+
+    if len(rectangles) != 4:
+        return vectors
+
+    p1 = rectangles[0]
+    p2 = rectangles[1]
+    vector = p2 - p1
+    vectors.append((p1, p2, vector))
+
+    p1 = rectangles[2]
+    p2 = rectangles[3]
+    vector = p2 - p1
+    vectors.append((p1, p2, vector))
+
+    p1 = rectangles[0]
+    p2 = rectangles[2]
+    vector = p2 - p1
+    vectors.append((p1, p2, vector))
+
+    p1 = rectangles[1]
+    p2 = rectangles[3]
+    vector = p2 - p1
+    vectors.append((p1, p2, vector))
+
+    return vectors
+
+
+
+
+def detect_walls(frame, template):
+    # Convert frame to grayscale
+    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+
+    # Apply template matching
+    result = cv2.matchTemplate(gray, template, cv2.TM_CCOEFF_NORMED)
+
+    # Set a threshold for matches
+    threshold = 0.8
+
+    # Get the locations where the template matches the frame
+    locations = np.where(result >= threshold)
+
+    # Draw rectangles around the matching locations
+    for pt in zip(*locations[::-1]):
+        cv2.rectangle(frame, pt, (pt[0] + template.shape[1], pt[1] + template.shape[0]), (0, 0, 255), 2)
+
+    return frame
+
+
 def camera():
     continuous_balls = []
 
@@ -118,16 +169,32 @@ def camera():
     frame_counter = 0
     warm_up_period = 30
 
+    # Load the wall template
+    wall_template = cv2.imread('C:/three_week_picture.png', cv2.IMREAD_GRAYSCALE)
+
+
+
     while True:
         ret, frame = vid.read()
-        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY) # convert to grayscale
-        gray = cv2.GaussianBlur(gray, (35, 35), 0) # reduce noise
+        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)  # convert to grayscale
+        gray = cv2.GaussianBlur(gray, (35, 35), 0)  # reduce noise
 
         frame, rectangles = detect_and_draw_rectangle(frame)
 
         # Print corners
         for rect in rectangles:
             print("Rectangle detected at:", rect)
+
+        # Calculate vectors between corners
+        vectors = calculate_vectors(rectangles)
+
+        # Print vectors
+        for v in vectors:
+            print(v)
+
+
+        # Detect walls
+        frame = detect_walls(frame, wall_template)
 
         # detect circles in the gray frame
         circles = cv2.HoughCircles(gray, cv2.HOUGH_GRADIENT, 1, 20, param1=50, param2=10, minRadius=5, maxRadius=10)
@@ -137,15 +204,16 @@ def camera():
             for (x, y, r) in circles:
                 # Filter out small circles
                 if r > 0:  # Set your minimum radius threshold here
-                    # Update the continuous balls with changable error margins
-                    continuous_balls = update_continuous_balls((x, y, r), continuous_balls, position_error_margin, size_error_margin)
+                    # Update the continuous balls with changeable error margins
+                    continuous_balls = update_continuous_balls((x, y, r), continuous_balls, position_error_margin,
+                                                               size_error_margin)
                     cv2.circle(frame, (x, y), r, (0, 255, 0), 2)
                     cv2.circle(frame, (x, y), 2, (0, 0, 255), 3)
 
         # Print the continuous balls' positions for debugging
         print([(x, y) for x, y, _, _, _ in continuous_balls])
 
-        # Display the frame with detected circles
+        # Display the frame with detected circles and walls
         cv2.imshow('frame', frame)
 
         # Press 'q' key to stop display
@@ -154,19 +222,9 @@ def camera():
             print(rectangles)
             break
 
-        # Increase position error margin with 'w' key
-        elif key == ord('w'):
-            position_error_margin += 1
-            print("Position error margin:", position_error_margin)
-
-        # Decrease position error margin with 's' key
-        elif key == ord('s'):
-            position_error_margin += -1
-            print("Position error margin:", position_error_margin)
-
         frame_counter += 1
     vid.release()
     cv2.destroyAllWindows()
 
-camera()
 
+camera()
