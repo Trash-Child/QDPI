@@ -41,10 +41,16 @@ def main():
     while True:
         try:
             ret, frame = vid.read()
-            cv2.imshow('frame', frame)
             cmd = calculateCommand(frame)
             reply = send_data(client_socket, cmd)
+            print('Sent: ', cmd)
             print('Recieved: ', reply)
+            if reply != 'Command executed':
+                print('Waiting for command execution...')
+                while True:
+                    reply = client_socket.recv(1024).decode()
+                    if reply == 'Command executed':
+                        break
 
         except Exception as e:
             if hasattr(e, 'winerror') or hasattr(e, 'errno'):

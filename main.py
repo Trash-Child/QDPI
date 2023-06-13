@@ -49,36 +49,35 @@ def handle_data(data):
     data = int(data)
     
     if data == 404:
-        print("An error occured")
-        return "Error"
+        print("Error 404")
+        return "Command executed"
     elif data == 1:
         print("going straight")
         correction = (0 - gyro.angle())*1
         qdpi.drive(150, correction)
         wait(1000)
         qdpi.stop()
-        return "forward"
+        return "Command executed"
     elif data > 5 or data < -5:
         print("turning ", data)
         qdpi.turn(data) # turn
-        return "turning"
+        return "Command executed"
     return "Data Error"
 
 def run_server():
     port = 1234
     server_socket = start_server(port)
+    print("Server running")
 
     while True:
+        print("Waiting for client...")
         client_socket, client_address = server_socket.accept()  # Wait for a new client connection
         print("Client connected:", client_address)
         motor_frontWheels.run(500)
         gyro.reset_angle(0)
         data = handle_client(client_socket)
-
         print('Server received:', data)
-
 
 print("Starting server thread...")
 server_thread = Thread(target=run_server)
 server_thread.start()
-
