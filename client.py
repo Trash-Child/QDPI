@@ -34,20 +34,18 @@ def stop_capture(vid):
 
 def main():
     vid = start_capture()
-    SERVER_IP = '169.254.193.103'  # EV3's IP address.
+
+    SERVER_IP = '192.168.43.184'  # EV3's IP address. default: 192.168.43.184
     SERVER_PORT = 1234  # The same port used by the EV3's server.
     client_socket = start_client(SERVER_IP, SERVER_PORT)
     while True:
         try:
             ret, frame = vid.read()
+            cv2.imshow('frame', frame)
             cmd = calculateCommand(frame)
             reply = send_data(client_socket, cmd)
             print('Recieved: ', reply)
-            cv2.imshow('frame', frame)
-            time.sleep(1)
-            key = cv2.waitKey(1) & 0xFF
-            if key == ord('q'):
-                break
+
         except Exception as e:
             if hasattr(e, 'winerror') or hasattr(e, 'errno'):
                 if e.winerror == 10053 or e.errno == errno.WSAECONNRESET:
@@ -55,9 +53,8 @@ def main():
                     break
             print(f"Exception occurred: ", e)
             continue
-    
-    client_socket.close()
     stop_capture(vid)
+    client_socket.close()
 
 if __name__ == '__main__':
     main()

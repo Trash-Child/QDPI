@@ -28,20 +28,22 @@ def start_server(port):
     print("Server started.")
     return server_socket
 
+
+def send_reply(client_socket, message):
+    try:
+        while message:
+            bytes_sent = client_socket.send(message)
+            message = message [bytes_sent:]
+    except Exception as e:
+        print('Error: {}'.format(e))
+
 def handle_client(client_socket):
     data = client_socket.recv(1024)
     reply = data.decode()
-    try:
-        message = b'Thank you for connecting'
-        while message:
-            bytes_sent = client_socket.send(message)
-            message = message[bytes_sent:]
-    except Exception as e:
-        print('Error: {}'.format(e))
-        client_socket.close()  # Close the client socket after handling the data
+    send_reply(client_socket, handle_data(data))
+    client_socket.close()
     return reply
 
-    
 
 def handle_data(data):
     data = int(data)
@@ -49,7 +51,7 @@ def handle_data(data):
     if data == 404:
         print("An error occured")
         return "Error"
-    elif data >= -5 and data <= 5:
+    elif data == 1:
         print("going straight")
         correction = (0 - gyro.angle())*1
         qdpi.drive(150, correction)
@@ -66,13 +68,13 @@ def run_server():
     port = 1234
     server_socket = start_server(port)
 
-    while True:  # Continuously accept new connections.
+    while True:
         client_socket, client_address = server_socket.accept()  # Wait for a new client connection
         print("Client connected:", client_address)
-        data = handle_client(client_socket)
         motor_frontWheels.run(500)
         gyro.reset_angle(0)
-        reply = handle_data(data)
+        data = handle_client(client_socket)
+
         print('Server received:', data)
 
 
@@ -80,12 +82,3 @@ print("Starting server thread...")
 server_thread = Thread(target=run_server)
 server_thread.start()
 
-# Add a delay to keep the main program running for a while
-# and prevent it from ending immediately.
-import time
-try:
-    while True:
-        time.sleep(1)
-except KeyboardInterrupt:
-    print("Shutting down...")
-print("End of main program.")
