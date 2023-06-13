@@ -45,15 +45,21 @@ def handle_client(client_socket):
 
 def handle_data(data):
     data = int(data)
+    
     if data == 404:
         print("An error occured")
+        return
     elif data <= 5:
+        print("going straight")
         correction = (0 - gyro.angle())*1
-        qdpi.drive(150, correction) # 150 = base speed
+        qdpi.drive(150, correction)
+        return
     
     elif data > 5:
-        qdpi.drive(0,data) # turn
-    
+        print("turning ", data)
+        qdpi.turn(data) # turn
+        return
+    return
 
 def run_server():
     port = 1234

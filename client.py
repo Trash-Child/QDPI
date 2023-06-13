@@ -16,9 +16,7 @@ def send_data(client_socket, data):
     data = data.encode()  # Convert data to bytes
     total_sent = 0
     while total_sent < len(data):
-        print(len(data))
         sent = client_socket.send(data[total_sent:])
-        print("sent data", sent)
         if sent == 0:  # Socket connection broken
             raise RuntimeError("Socket connection broken")
         total_sent += sent
@@ -38,22 +36,26 @@ def main():
     SERVER_IP = '192.168.43.184'  # EV3's IP address.
     SERVER_PORT = 1234  # The same port used by the EV3's server.
     client_socket = start_client(SERVER_IP, SERVER_PORT)
-    try:  # Add a try block to handle potential exceptions
-        while True:
+    while True:
+        try:
             ret, frame = vid.read()
             cmd = calculateCommand(frame)
-            print("calc cmd: ", cmd)
             reply = send_data(client_socket, cmd)
-            print('Received:', reply)
+            print('Recieved: ', reply)
             cv2.imshow('frame', frame)
+            time.sleep(1)
             key = cv2.waitKey(1) & 0xFF
             if key == ord('q'):
                 break
-    except Exception as e:  # Catch and print any exceptions
-        print(f"Exception occurred: {e}")
-    finally:  # Ensure that the socket and video capture are always closed
-        client_socket.close()
-        stop_capture(vid)
+        except Exception as e:
+            if e.winerror == 10053:
+                print('Connection closed')
+                break
+            print(f"Exception occurred: {e}")
+            continue
+    
+    client_socket.close()
+    stop_capture(vid)
 
 if __name__ == '__main__':
     main()
