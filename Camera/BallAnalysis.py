@@ -48,38 +48,8 @@ def update_continuous_balls(circle, continuous_balls, position_error_margin, siz
     return updated_continuous_balls
 
 
-
-def update_continuous_corners(corner, continuous_corners, ):
-
-
-def line_intersection(line1, line2):
-    x1, y1, x2, y2 = line1[0]
-    x3, y3, x4, y4 = line2[0]
-
-    det1 = (x1 - x2) * (y3 - y4)
-    det2 = (y1 - y2) * (x3 - x4)
-    d = det1 - det2
-
-    if d != 0:  # lines are not parallel
-        px = ((x1*y2 - y1*x2) * (x3 - x4) - (x1 - x2) * (x3*y4 - y3*x4)) / d
-        py = ((x1*y2 - y1*x2) * (y3 - y4) - (y1 - y2) * (x3*y4 - y3*x4)) / d
-        return (px, py)
-    else:
-        return None
-
-def is_rectangle(p1, p2, p3, p4):
-    cx = (p1[0] + p2[0] + p3[0] + p4[0]) / 4
-    cy = (p1[1] + p2[1] + p3[1] + p4[1]) / 4
-
-    dd1 = (cx - p1[0])**2 + (cy - p1[1])**2
-    dd2 = (cx - p2[0])**2 + (cy - p2[1])**2
-    dd3 = (cx - p3[0])**2 + (cy - p3[1])**2
-    dd4 = (cx - p4[0])**2 + (cy - p4[1])**2
-
-    return abs(dd1 - dd2) < 1e-9 and abs(dd1 - dd3) < 1e-9 and abs(dd1 - dd4) < 1e-9
-
-def detect_and_draw_rectangle(frame):
-    # Convert frame to grayscale
+def detect_walls(frame):
+    # Convert frame to grayscale for line detection
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
     # Apply edge detection
@@ -129,33 +99,20 @@ def detect_and_draw_rectangle(frame):
     return frame, rectangles
 
 
-def calculate_vectors(rectangles):
-    vectors = []
+    # Apply Probabilistic Hough Line Transform
+    lines = cv2.HoughLinesP(edges, 1, np.pi / 180, 100, minLineLength=100, maxLineGap=10)
+    walls = []
+    if lines is not None:
+        for line in lines:
+            x1, y1, x2, y2 = line[0]
 
     if len(rectangles) != 4:
         return vectors
 
-    p1 = rectangles[0]
-    p2 = rectangles[1]
-    vector = p2 - p1
-    vectors.append((p1, p2, vector))
-
-    p1 = rectangles[2]
-    p2 = rectangles[3]
-    vector = p2 - p1
-    vectors.append((p1, p2, vector))
-
-    p1 = rectangles[0]
-    p2 = rectangles[2]
-    vector = p2 - p1
-    vectors.append((p1, p2, vector))
-
-    p1 = rectangles[1]
-    p2 = rectangles[3]
-    vector = p2 - p1
-    vectors.append((p1, p2, vector))
-
-    return vectors
+            # Draw the line on the colored frame
+            cv2.line(frame, (x1, y1), (x2, y2), (0, 0, 255), 2)
+    
+    return frame, walls
 
 
 
@@ -200,22 +157,11 @@ def camera():
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)  # convert to grayscale
         gray = cv2.GaussianBlur(gray, (35, 35), 0)  # reduce noise
 
-        frame, rectangles = detect_and_draw_rectangle(frame)
+        frame, walls = detect_walls(frame)  # Use original colored frame for wall detection
 
-        # Print corners
-        for rect in rectangles:
-            print("Rectangle detected at:", rect)
-
-        # Calculate vectors between corners
-        vectors = calculate_vectors(rectangles)
-
-        # Print vectors
-        for v in vectors:
-            print(v)
-
-
-        # Detect walls
-        frame = detect_walls(frame, wall_template)
+        # Print walls
+        for wall in walls:
+            print("Wall detected from point {} to point {}".format(*wall))
 
         # detect circles in the gray frame
         circles = cv2.HoughCircles(gray, cv2.HOUGH_GRADIENT, 1, 20, param1=50, param2=10, minRadius=5, maxRadius=10)
@@ -240,7 +186,6 @@ def camera():
         # Press 'q' key to stop display
         key = cv2.waitKey(1) & 0xFF
         if key == ord('q'):
-            print(rectangles)
             break
 
         frame_counter += 1
