@@ -33,15 +33,21 @@ def stop_capture(vid):
     cv2.destroyAllWindows()
 
 def main():
-    vid = start_capture()
+    if input("Press 1 for manual, or anything else to continue: ") == '1':
+        manual = True
+    else:
+        vid = start_capture()
 
     SERVER_IP = '192.168.43.184'  # EV3's IP address. default: 192.168.43.184
     SERVER_PORT = 1234  # The same port used by the EV3's server.
     client_socket = start_client(SERVER_IP, SERVER_PORT)
     while True:
         try:
-            ret, frame = vid.read()
-            cmd = calculateCommand(frame)
+            if not manual:
+                ret, frame = vid.read()
+                cmd = calculateCommand(frame)
+            else:
+                cmd = input("Enter command (1 for drive, >5 for turn, 404 for nothing): ")
             reply = send_data(client_socket, cmd)
             print('Sent: ', cmd)
             print('Recieved: ', reply)

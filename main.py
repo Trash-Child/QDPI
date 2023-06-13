@@ -38,11 +38,14 @@ def send_reply(client_socket, message):
         print('Error: {}'.format(e))
 
 def handle_client(client_socket):
-    data = client_socket.recv(1024)
-    reply = data.decode()
-    send_reply(client_socket, handle_data(data))
+    while True:
+        data = client_socket.recv(1024)
+        if not data:
+            break
+        reply = data.decode()
+        send_reply(client_socket, handle_data(data))
+        print('Server recieved:', reply)
     client_socket.close()
-    return reply
 
 
 def handle_data(data):
@@ -54,20 +57,23 @@ def handle_data(data):
     elif data == 1:
         print("going straight")
         correction = (0 - gyro.angle())*1
-        qdpi.drive(150, correction)
-        wait(1000)
-        qdpi.stop()
+        qdpi.straight(100)
+        
+        return "Command executed"
+    elif data == -1:
+        print("Reversing")
+        qdpi.straight(-100)
         return "Command executed"
     elif data > 5 or data < -5:
         print("turning ", data)
-        qdpi.turn(data) # turn
+        qdpi.turn(data)
         return "Command executed"
-    return "Data Error"
+    print("Data error")
+    return "Command executed"
 
 def run_server():
     port = 1234
     server_socket = start_server(port)
-    print("Server running")
 
     while True:
         print("Waiting for client...")
@@ -78,6 +84,6 @@ def run_server():
         data = handle_client(client_socket)
         print('Server received:', data)
 
-print("Starting server thread...")
-server_thread = Thread(target=run_server)
-server_thread.start()
+#server_thread = Thread(target=run_server)
+#server_thread.start()
+run_server()
