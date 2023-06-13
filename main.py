@@ -38,7 +38,7 @@ def handle_client(client_socket):
             message = message[bytes_sent:]
     except Exception as e:
         print('Error: {}'.format(e))
-    client_socket.close()  # Close the client socket after handling the data
+        client_socket.close()  # Close the client socket after handling the data
     return reply
 
     
@@ -48,18 +48,19 @@ def handle_data(data):
     
     if data == 404:
         print("An error occured")
-        return
-    elif data <= 5:
+        return "Error"
+    elif data >= -5 and data <= 5:
         print("going straight")
         correction = (0 - gyro.angle())*1
         qdpi.drive(150, correction)
-        return
-    
-    elif data > 5:
+        wait(1000)
+        qdpi.stop()
+        return "forward"
+    elif data > 5 or data < -5:
         print("turning ", data)
         qdpi.turn(data) # turn
-        return
-    return
+        return "turning"
+    return "Data Error"
 
 def run_server():
     port = 1234
@@ -71,7 +72,7 @@ def run_server():
         data = handle_client(client_socket)
         motor_frontWheels.run(500)
         gyro.reset_angle(0)
-        handle_data(data)
+        reply = handle_data(data)
         print('Server received:', data)
 
 

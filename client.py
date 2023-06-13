@@ -2,6 +2,7 @@ import socket
 import cv2
 from movementLogic import calculateCommand
 import time
+import errno
 
 def start_client(SERVER_IP, SERVER_PORT):
     client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -33,7 +34,7 @@ def stop_capture(vid):
 
 def main():
     vid = start_capture()
-    SERVER_IP = '192.168.43.184'  # EV3's IP address.
+    SERVER_IP = '169.254.193.103'  # EV3's IP address.
     SERVER_PORT = 1234  # The same port used by the EV3's server.
     client_socket = start_client(SERVER_IP, SERVER_PORT)
     while True:
@@ -48,10 +49,11 @@ def main():
             if key == ord('q'):
                 break
         except Exception as e:
-            if e.winerror == 10053:
-                print('Connection closed')
-                break
-            print(f"Exception occurred: {e}")
+            if hasattr(e, 'winerror') or hasattr(e, 'errno'):
+                if e.winerror == 10053 or e.errno == errno.WSAECONNRESET:
+                    print('Connection closed')
+                    break
+            print(f"Exception occurred: ", e)
             continue
     
     client_socket.close()

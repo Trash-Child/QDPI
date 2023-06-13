@@ -35,10 +35,8 @@ def calculateCommand(frame):
         return 404
     
     angle = calculateAngle(green, robot, target)
-    print("Printing angle: ", angle)
     if abs(angle) > 5: # error margin
         return angle
-        
     else:
         return 1
 
