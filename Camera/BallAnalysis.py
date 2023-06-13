@@ -6,30 +6,51 @@ import math
 
 vid = cv2.VideoCapture(0)
 
+# function definition with error margins, counter threshold and same position counter threshold as parameters
 def update_continuous_balls(circle, continuous_balls, position_error_margin, size_error_margin, counter_threshold=10, same_pos_counter_threshold=20):
+    # unpacking circle tuple into x, y, and radius
     x, y, r = circle
+    # initialize an empty list for updated balls
     updated_continuous_balls = []
+    # flag to indicate if a match has been found in the continuous_balls list
     found_match = False
 
+    # iterate over each ball in continuous_balls
     for prev_x, prev_y, prev_r, count, same_pos_count in continuous_balls:
-
+        # calculate the difference in position (distance between the two circles)
         position_diff = np.sqrt((x - prev_x)**2 + (y - prev_y)**2)
+        # calculate the difference in size (absolute difference in radius)
         size_diff = abs(r - prev_r)
 
+        # check if position and size differences are within error margins
         if position_diff <= position_error_margin and size_diff <= size_error_margin:
+            # if a match hasn't been found yet
             if not found_match:
+                # add the new circle to updated_balls with a reset counter and incremented same position counter (if position didn't change)
                 updated_continuous_balls.append((x, y, r, 0, same_pos_count+1 if position_diff == 0 else 0))
+                # set the found_match flag to True
                 found_match = True
             else:
+                # if a match was already found, add the old ball with its original counters
                 updated_continuous_balls.append((prev_x, prev_y, prev_r, count, same_pos_count))
         else:
+            # if the position and size differences are larger than error margins
             if count < counter_threshold and same_pos_count < same_pos_counter_threshold:
+                # add the old ball with incremented counter, but only if it hasn't exceeded the counter thresholds
                 updated_continuous_balls.append((prev_x, prev_y, prev_r, count + 1, same_pos_count))
 
+    # if no match was found in continuous_balls list
     if not found_match:
+        # add the new circle to updated_balls with both counters reset to 0
         updated_continuous_balls.append((x, y, r, 0, 0))
 
+    # return the list of updated balls
     return updated_continuous_balls
+
+
+
+def update_continuous_corners(corner, continuous_corners, ):
+
 
 def line_intersection(line1, line2):
     x1, y1, x2, y2 = line1[0]
@@ -91,7 +112,7 @@ def detect_and_draw_rectangle(frame):
                 p0, p1, p2 = approx[i - 1], approx[i], approx[(i + 1) % 4]
                 angle = abs(math.degrees(math.atan2(p2[0][1] - p1[0][1], p2[0][0] - p1[0][0]) -
                                          math.atan2(p0[0][1] - p1[0][1], p0[0][0] - p1[0][0])))
-                
+
                 # Adjust angles to be between 0 and 180
                 angle = angle if angle < 180 else 360 - angle
 
