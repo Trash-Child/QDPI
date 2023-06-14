@@ -4,13 +4,14 @@ from movementLogic import calculateCommand
 import time
 import errno
 
+# Function to start the client and connect to the server
 def start_client(SERVER_IP, SERVER_PORT):
     client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     client_socket.connect((SERVER_IP, SERVER_PORT))
     print(f"Created socket: {client_socket}")  # Debug print
     return client_socket
 
-
+# Function to send data to the server and receive a reply
 def send_data(client_socket, data):
     if isinstance(data, int):
         data = str(data)  # Convert integer to string
@@ -24,10 +25,12 @@ def send_data(client_socket, data):
     reply = client_socket.recv(1024).decode()
     return reply
 
+# Function to start capturing video
 def start_capture():
     vid = cv2.VideoCapture(0)
     return vid
 
+# Function to stop capturing video
 def stop_capture(vid):
     vid.release()
     cv2.destroyAllWindows()
@@ -41,6 +44,7 @@ def main():
     SERVER_IP = '192.168.43.184'  # EV3's IP address. default: 192.168.43.184
     SERVER_PORT = 1234  # The same port used by the EV3's server.
     client_socket = start_client(SERVER_IP, SERVER_PORT)
+    
     while True:
         try:
             if not manual:
@@ -48,9 +52,11 @@ def main():
                 cmd = calculateCommand(frame)
             else:
                 cmd = input("Enter command (1 for drive, >5 for turn, 404 for nothing): ")
+            
             reply = send_data(client_socket, cmd)
-            print('Sent: ', cmd)
-            print('Recieved: ', reply)
+            print('Sent:', cmd)
+            print('Received:', reply)
+            
             if reply != 'Command executed':
                 print('Waiting for command execution...')
                 while True:
@@ -63,8 +69,9 @@ def main():
                 if e.winerror == 10053 or e.errno == errno.WSAECONNRESET:
                     print('Connection closed')
                     break
-            print(f"Exception occurred: ", e)
+            print(f"Exception occurred:", e)
             continue
+    
     stop_capture(vid)
     client_socket.close()
 
