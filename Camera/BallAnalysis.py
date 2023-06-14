@@ -66,63 +66,61 @@ def locateOrangeBall(frame):
 
     return best_location
 
-
-# Function to locate colored balls in the frame based on lower and upper color ranges
-def locateColoredBall(frame, lower_color, upper_color):
-    best_location = []
-    best_area = 0
-    best_circularity = 0
-    hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-    mask = cv2.inRange(hsv, lower_color, upper_color)
-    
-    contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    
-    for cnt in contours:
-        area = cv2.contourArea(cnt)
-        perimeter = cv2.arcLength(cnt, True)
-        
-        if perimeter == 0:
-            continue
-        
-        circularity = 4*np.pi*(area / (perimeter**2))
-        
-        if area <= best_area and circularity <= best_circularity:
-            continue
-
-        M = cv2.moments(cnt)
-        
-        if M["m00"] == 0:
-            continue
-
-        cX = int(M["m10"] / M["m00"])
-        cY = int(M["m01"] / M["m00"])
-        
-        best_location = cX, cY
-        best_area = area
-        best_circularity = circularity
-
-    # Return the center of the best contour
-    return best_location
-
-
-# Function to locate the green ball in the frame
-def locateGreenBall(frame):
-    lower_green = np.array([36, 50, 50])
-    upper_green = np.array([86, 255, 255])
-
-    return locateColoredBall(frame, lower_green, upper_green)
-
-
-# Function to locate the blue ball in the frame
-def locateBlueBall(frame):
-    lower_blue = np.array([80, 20, 50])
-    upper_blue = np.array([130, 255, 255])
-
-    return locateColoredBall(frame, lower_blue, upper_blue)
-
-
 # Global variable to store the closest ball
 closest_ball = [None]
+
+
+def findRobot(frame):
+    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    blur = cv2.GaussianBlur(gray, (5, 5), 0)
+    _, thresh = cv2.threshold(blur, 90, 255, cv2.THRESH_BINARY)
+    thresh = cv2.bitwise_not(thresh)
+    contours, _ = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    cv2.imshow('thresh', thresh)
+    cv2.waitKey(1)
+    if contours and len(contours) >= 2:
+        sorted_contours = sorted(contours, key=cv2.contourArea, reverse=True)
+        max_contour = sorted_contours[0]
+        M1 = cv2.moments(max_contour)
+        
+        if M1['m00'] != 0:
+            cx1 = int(M1['m10'] / M1['m00'])
+            cy1 = int(M1['m01'] / M1['m00'])
+
+            cv2.circle(thresh, (cx1, cy1), 5, (0, 0, 255), -1)
+            max_distance = np.inf
+            second_max_contour = None
+            min_dist = 0
+
+            # Find the contour closest to the max_contour
+            for contour in sorted_contours[1:]:
+                M = cv2.moments(contour)
+                if M['m00'] != 0:
+                    print("We got into the if part 3")
+                    cx = int(M['m10'] / M['m00'])
+                    cy = int(M['m01'] / M['m00'])
+                    dist = np.sqrt((cx1 - cx)**2 + (cy1 - cy)**2)
+                    if dist < min_dist and dist < max_distance:
+                        min_dist = dist
+                        second_max_contour = contour
+
+            if second_max_contour is not None:
+                M2 = cv2.moments(second_max_contour)
+                cx2 = int(M2['m10'] / M2['m00'])
+                cy2 = int(M2['m01'] / M2['m00'])
+                
+                cv2.circle(frame, (cx2, cy2), 5, (0, 0, 255), -1)
+                cv2.line(frame, (cx1, cy1), (cx2, cy2), (255, 0, 0), 2)
+                
+                heading = np.arctan2(cy2 - cy1, cx2 - cx1) * 180 / np.pi
+                #print("Center of robot: ({}, {})".format(cx1, cy1))
+                #print("Heading: {} degrees".format(heading))
+                return np.array([cx1, cy1]), heading
+            
+    #else:
+       #print("No dark spot found")
+    return None
+
 
 # Function to analyze the frame and locate balls
 def analyseFrame(frame):
@@ -131,8 +129,6 @@ def analyseFrame(frame):
     position_error_margin = 25
     size_error_margin = 3
     orange_ball_location = None
-    blue_ball_location = None
-    green_ball_location = None
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     _, thresh = cv2.threshold(gray, 220, 255, cv2.THRESH_BINARY)  # Filter out low light pixels
 
@@ -152,19 +148,12 @@ def analyseFrame(frame):
 
             if closest_ball[0] and cX == closest_ball[0][0] and cY == closest_ball[0][1]:
                 cv2.circle(frame, (cX, cY), int(r) + 10, (255, 0, 0), 4)  # Draw an extra circle around the closest ball
-
-        # Find green and blue balls, and draw a circle around them
-        green_ball_location = locateGreenBall(frame)
-        if green_ball_location:
-            cv2.circle(frame, green_ball_location, 10, (0, 255, 0), 2)
-
-        blue_ball_location = locateBlueBall(frame)
-        if blue_ball_location:
-            cv2.circle(frame, blue_ball_location, 10, (0, 0, 255), 2)
-        
+    
         orange_ball_location = locateOrangeBall(frame)
+        if orange_ball_location:
+            cv2.circle(frame, (cX, cY), int(r), (255, 127, 0), 4)
 
-    return continuous_balls, orange_ball_location, green_ball_location, blue_ball_location
+    return continuous_balls, orange_ball_location, robot
 
 
 # Function to locate the nearest ball to the robot among the continuous balls and orange ball
@@ -196,3 +185,11 @@ def locate_nearest_ball(continuous_balls, orange_ball_location, green_dot, blue_
         closest_ball[0] = orange_ball_location
 
     return closest_ball, robot
+
+
+vid = cv2.VideoCapture(0)
+while True:
+    ret, frame = vid.read()
+    findRobot(frame)
+    cv2.imshow('frame', frame)
+    cv2.waitKey(1)

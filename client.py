@@ -51,6 +51,8 @@ def main():
             if not manual:
                 ret, frame = vid.read()
                 cmd = calculateCommand(frame)
+                cv2.imshow('frame', frame)
+                cv2.waitKey(1)
             else:
                 while True:
                     if cmd != None and cmd == '?':
@@ -72,7 +74,7 @@ def main():
                     reply = client_socket.recv(1024).decode()
                     if reply == 'Command executed':
                         break
-
+            
         except Exception as e:
             if hasattr(e, 'winerror') or hasattr(e, 'errno'):
                 if e.winerror == 10053 or e.errno == errno.WSAECONNRESET:
