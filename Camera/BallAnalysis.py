@@ -24,6 +24,7 @@ def update_continuous_balls(circle, continuous_balls, position_error_margin, siz
         updated_continuous_balls.append((x, y, r, 0, 0))
     return updated_continuous_balls
 
+
 def update_continuous_corners(corner, continuous_corners, position_error_margin, counter_threshold=20, same_pos_counter_threshold=20):
     x, y = corner
     updated_continuous_corners = []
@@ -45,6 +46,7 @@ def update_continuous_corners(corner, continuous_corners, position_error_margin,
 
     return updated_continuous_corners
 
+
 def line_intersection(line1, line2):
     x1, y1, x2, y2 = line1
     x3, y3, x4, y4 = line2
@@ -59,6 +61,7 @@ def line_intersection(line1, line2):
         return (px, py)
     else:
         return None
+
 
 def detect_walls(frame, continuous_corners, position_error_margin):
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
@@ -95,8 +98,23 @@ def detect_walls(frame, continuous_corners, position_error_margin):
         continuous_corners["ne"] = update_continuous_corners(ne, continuous_corners["ne"], position_error_margin)
         continuous_corners["sw"] = update_continuous_corners(sw, continuous_corners["sw"], position_error_margin)
         continuous_corners["se"] = update_continuous_corners(se, continuous_corners["se"], position_error_margin)
-
+        
     return frame, walls, corners, continuous_corners
+
+'''
+    counter1=0
+    num=continuous_corners["nw",0,0,0]
+    for i in continuous_corners["nw"]:
+        curr_frequency = continuous_corners["nw"].count(i)
+        if(curr_frequency>counter):
+            counter = curr_frequency
+            num=i
+
+        return num
+
+    print(most_frequent(continuous_corners["nw"]))
+'''
+
 
 def camera():
     continuous_balls = []
@@ -145,5 +163,6 @@ def camera():
         frame_counter += 1
     vid.release()
     cv2.destroyAllWindows()
+
 
 camera()
