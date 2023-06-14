@@ -1,14 +1,15 @@
 #!/usr/bin/env pybricks-micropython
 from threading import Thread
-from pybricks.hubs import EV3Brick as brick 
+from pybricks.hubs import EV3Brick as brick
 from pybricks.ev3devices import Motor, TouchSensor, ColorSensor, InfraredSensor, UltrasonicSensor, GyroSensor
-from pybricks.parameters import Port, Stop, Direction, Button, Color 
-from pybricks.tools import wait, StopWatch, DataLog 
-from pybricks.robotics import DriveBase 
-from pybricks.media.ev3dev import SoundFile, ImageFile 
+from pybricks.parameters import Port, Stop, Direction, Button, Color
+from pybricks.tools import wait, StopWatch, DataLog
+from pybricks.robotics import DriveBase
+from pybricks.media.ev3dev import SoundFile, ImageFile
 import math
 import socket
 
+# Create instances of EV3 brick, motors, and sensors
 ev3 = brick()
 motor_r = Motor(Port.A)
 motor_l = Motor(Port.B)
@@ -16,9 +17,10 @@ motor_frontWheels = Motor(Port.C)
 motor_v = Motor(Port.D)
 # gyro = GyroSensor(Port.S1)
 
-qdpi = DriveBase(motor_l, motor_r, wheel_diameter = 32.5, axle_track = 204.5)
+# Create DriveBase instance for differential drive
+qdpi = DriveBase(motor_l, motor_r, wheel_diameter=32.5, axle_track=204.5)
 
-
+# Function to start the server and bind it to a specific port
 def start_server(port):
     print("Starting server...")
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -28,15 +30,16 @@ def start_server(port):
     print("Server started.")
     return server_socket
 
-
+# Function to send a reply to the client
 def send_reply(client_socket, message):
     try:
         while message:
             bytes_sent = client_socket.send(message)
-            message = message [bytes_sent:]
+            message = message[bytes_sent:]
     except Exception as e:
         print('Error: {}'.format(e))
 
+# Function to handle the client's requests
 def handle_client(client_socket):
     while True:
         data = client_socket.recv(1024)
@@ -44,10 +47,10 @@ def handle_client(client_socket):
             break
         reply = data.decode()
         send_reply(client_socket, handle_data(data))
-        print('Server recieved:', reply)
+        print('Server received:', reply)
     client_socket.close()
 
-
+# Function to handle the data received from the client and execute the corresponding command
 def handle_data(data):
     data = int(data)
     
@@ -59,6 +62,7 @@ def handle_data(data):
         print("going straight")
         # correction = (0 - gyro.angle())*1
         qdpi.straight(100)
+        
         return "Command executed"
 
     elif data == -1:
@@ -67,7 +71,7 @@ def handle_data(data):
         return "Command executed"
 
     elif data > 5 or data < -5:
-        print("turning ", data)
+        print("Turning", data)
         qdpi.turn(data)
         return "Command executed"
 
@@ -84,6 +88,7 @@ def handle_data(data):
     print("Data error")
     return "Command executed"
 
+# Function to run the server and handle client connections
 def run_server():
     port = 1234
     server_socket = start_server(port)
@@ -97,6 +102,9 @@ def run_server():
         data = handle_client(client_socket)
         print('Server received:', data)
 
-#server_thread = Thread(target=run_server)
-#server_thread.start()
+# Uncomment the following two lines if running the server in a separate thread
+# server_thread = Thread(target=run_server)
+# server_thread.start()
+
+# Run the server in the main thread
 run_server()
