@@ -14,7 +14,7 @@ motor_r = Motor(Port.A)
 motor_l = Motor(Port.B)
 motor_frontWheels = Motor(Port.C)
 motor_v = Motor(Port.D)
-gyro = GyroSensor(Port.S1)
+# gyro = GyroSensor(Port.S1)
 
 qdpi = DriveBase(motor_l, motor_r, wheel_diameter = 32.5, axle_track = 204.5)
 
@@ -54,20 +54,33 @@ def handle_data(data):
     if data == 404:
         print("Error 404")
         return "Command executed"
+
     elif data == 1:
         print("going straight")
-        correction = (0 - gyro.angle())*1
+        # correction = (0 - gyro.angle())*1
         qdpi.straight(100)
-        
         return "Command executed"
+
     elif data == -1:
         print("Reversing")
         qdpi.straight(-100)
         return "Command executed"
+
     elif data > 5 or data < -5:
         print("turning ", data)
         qdpi.turn(data)
         return "Command executed"
+
+    elif data == 2:
+        motor_v.run(450)
+        wait(200)
+        motor_v.run(0)
+        wait(2000)
+        motor_v.run(-450)
+        wait(200)
+        motor_v.run(0)
+        return "Command executed"
+
     print("Data error")
     return "Command executed"
 
@@ -79,8 +92,8 @@ def run_server():
         print("Waiting for client...")
         client_socket, client_address = server_socket.accept()  # Wait for a new client connection
         print("Client connected:", client_address)
-        motor_frontWheels.run(500)
-        gyro.reset_angle(0)
+        # motor_frontWheels.run(500)
+        # gyro.reset_angle(0)
         data = handle_client(client_socket)
         print('Server received:', data)
 
