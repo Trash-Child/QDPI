@@ -1,4 +1,4 @@
-from Camera.BallAnalysis import analyseFrame, locate_nearest_ball
+from Camera.BallAnalysis import analyseFrame, locate_nearest_ball, findRobot
 import cv2
 import math
 
@@ -7,7 +7,7 @@ import math
 # It then finds the nearest white ball and the nearest robot ball.
 # If any of the required information is missing, it returns None.
 def getImportantInfo(frame):
-    white_balls, orange, green, blue = analyseFrame(frame)
+    white_balls, orange = analyseFrame(frame)
     target, robot = locate_nearest_ball(white_balls, orange, green, blue)
     if target is None or robot is None or green is None:
         print("getImportantInfo returning none")
@@ -21,7 +21,7 @@ def getImportantInfo(frame):
     # Draw a circle around the target ball on the frame.
     cv2.circle(frame, target, 10, (255, 255, 0), 2)
 
-    return target, robot, green   
+    return target, robot, heading   
 
 # This function calculates the angle between three points.
 def calculateAngle(p1, p2, p3):
@@ -39,7 +39,7 @@ def calculateAngle(p1, p2, p3):
 # If the angle is greater than 5 degrees, it returns the angle.
 # Otherwise, it returns 1.
 def calculateCommand(frame):
-    target, robot, green = getImportantInfo(frame)
+    target, robot, heading = getImportantInfo(frame)
     if robot is None:
         return 404
     
