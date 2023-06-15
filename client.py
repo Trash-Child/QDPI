@@ -42,7 +42,7 @@ def main():
     else:
         vid = start_capture()
 
-    SERVER_IP = '192.168.43.184'  # EV3's IP address. default: 192.168.43.184
+    SERVER_IP = '192.168.43.81'  # EV3's IP address. default: 192.168.43.184
     SERVER_PORT = 1234  # The same port used by the EV3's server.
     client_socket = start_client(SERVER_IP, SERVER_PORT)
     cmd = ""
@@ -64,7 +64,7 @@ def main():
                     except Exception as e:
                         print("Not an integer")
                 
-            reply = send_data(client_socket, cmd)
+            reply = send_data(client_socket, 10)
             print('Sent:', cmd)
             print('Received:', reply)
             
