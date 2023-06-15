@@ -94,6 +94,8 @@ def analyseFrame(frame):
     orange_ball_location = None
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     _, thresh = cv2.threshold(gray, 220, 255, cv2.THRESH_BINARY)  # Filter out low light pixels
+    cv2.imshow('thresh', thresh)
+    cv2.waitKey(1)
     contours, _ = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
         
     for cnt in contours:
@@ -113,7 +115,7 @@ def analyseFrame(frame):
     
         orange_ball_location = locateColoredBall(frame, [10, 100, 100], [20, 255, 255])
         if orange_ball_location:
-            cv2.circle(frame, (cX, cY), int(r), (255, 127, 0), 4)
+            cv2.circle(frame, orange_ball_location, 5, (255, 127, 0), 4)
 
     return continuous_balls, orange_ball_location
 
@@ -121,7 +123,7 @@ def analyseFrame(frame):
 def locate_nearest_ball(continuous_balls, orange_ball_location, robot):
     global closest_ball
 
-    if not robot:
+    if robot is None:
         print("Robot not found")
         return None
     
@@ -143,3 +145,13 @@ def locate_nearest_ball(continuous_balls, orange_ball_location, robot):
         closest_ball[0] = orange_ball_location
 
     return closest_ball, robot
+
+
+vid = cv2.VideoCapture(0)
+while True:
+    ret, frame = vid.read()
+    cv2.imshow('frame', frame)
+    cv2.waitKey(1)
+    white, orange = analyseFrame(frame)
+    robot, heading = findRobot(frame)
+    locate_nearest_ball(white, orange, robot)

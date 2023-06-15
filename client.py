@@ -81,7 +81,6 @@ def main():
                     print('Connection closed')
                     break
             print(f"Exception occurred:", e)
-            continue
     
     stop_capture(vid)
     client_socket.close()
