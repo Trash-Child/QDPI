@@ -96,7 +96,6 @@ def findRobot(frame):
             for contour in sorted_contours[1:]:
                 M = cv2.moments(contour)
                 if M['m00'] != 0:
-                    print("We got into the if part 3")
                     cx = int(M['m10'] / M['m00'])
                     cy = int(M['m01'] / M['m00'])
                     dist = np.sqrt((cx1 - cx)**2 + (cy1 - cy)**2)
@@ -109,8 +108,8 @@ def findRobot(frame):
                 cx2 = int(M2['m10'] / M2['m00'])
                 cy2 = int(M2['m01'] / M2['m00'])
                 
-                cv2.circle(frame, (cx2, cy2), 5, (0, 0, 255), -1)
-                cv2.line(frame, (cx1, cy1), (cx2, cy2), (255, 0, 0), 2)
+                cv2.circle(thresh, (cx2, cy2), 5, (0, 0, 255), -1)
+                cv2.line(thresh, (cx1, cy1), (cx2, cy2), (255, 0, 0), 2)
                 
                 heading = np.arctan2(cy2 - cy1, cx2 - cx1) * 180 / np.pi
                 #print("Center of robot: ({}, {})".format(cx1, cy1))
