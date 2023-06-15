@@ -145,13 +145,3 @@ def locate_nearest_ball(continuous_balls, orange_ball_location, robot):
         closest_ball[0] = orange_ball_location
 
     return closest_ball, robot
-
-
-vid = cv2.VideoCapture(0)
-while True:
-    ret, frame = vid.read()
-    cv2.imshow('frame', frame)
-    cv2.waitKey(1)
-    white, orange = analyseFrame(frame)
-    robot, heading = findRobot(frame)
-    locate_nearest_ball(white, orange, robot)

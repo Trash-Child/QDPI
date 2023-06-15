@@ -25,11 +25,6 @@ def send_data(client_socket, data):
     reply = client_socket.recv(1024).decode()
     return reply
 
-# Function to start capturing video
-def start_capture():
-    vid = cv2.VideoCapture(0)
-    return vid
-
 # Function to stop capturing video
 def stop_capture(vid):
     vid.release()
@@ -40,7 +35,7 @@ def main():
     if input("Press 1 for manual, or anything else to continue: ") == '1':
         manual = True
     else:
-        vid = start_capture()
+        vid = cv2.VideoCapture(0)
 
     SERVER_IP = '192.168.43.81'  # EV3's IP address. default: 192.168.43.184
     SERVER_PORT = 1234  # The same port used by the EV3's server.
@@ -64,23 +59,20 @@ def main():
                     except Exception as e:
                         print("Not an integer")
                 
-            reply = send_data(client_socket, 10)
+            reply = send_data(client_socket, cmd)
             print('Sent:', cmd)
-            print('Received:', reply)
-            
-            if reply != 'Command executed':
-                print('Waiting for command execution...')
-                while True:
-                    reply = client_socket.recv(1024).decode()
-                    if reply == 'Command executed':
-                        break
+            print('Waiting for command execution...')
+            while reply != 'Command executed':
+                reply = client_socket.recv(1024).decode()
+            print('Done')
             
         except Exception as e:
             if hasattr(e, 'winerror') or hasattr(e, 'errno'):
                 if e.winerror == 10053 or e.errno == errno.WSAECONNRESET:
-                    print('Connection closed')
+                    print('Connection was abruptly closed')
                     break
             print(f"Exception occurred:", e)
+            continue
     
     stop_capture(vid)
     client_socket.close()
