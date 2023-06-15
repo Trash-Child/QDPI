@@ -3,6 +3,7 @@ import cv2
 from movementLogic import calculateCommand
 import time
 import errno
+import threading
 
 # Function to start the client and connect to the server
 def start_client(SERVER_IP, SERVER_PORT):
@@ -35,11 +36,34 @@ def stop_capture(vid):
     vid.release()
     cv2.destroyAllWindows()
 
+
+# Function for continous vid read
+def continousFrame(vid):
+    while True:
+        ret, frame = vid.read()
+        if not ret:
+            break
+        
+        with frame_lock:
+            global latest_frame # Declare as a global variable
+            latest_frame = latest_frame.copy()  # Store the latest frame
+
+# Function for getting the latest frame from continous frame
+def get_frame():
+    with frame_lock:
+        return latest_frame.copy() if latest_frame is not None else None
+
+
 def main():
-    if input("Press 1 for manual, or anything else to continue: ") == '1':
-        manual = True
+    global latest_frame, frame_lock  # Declare frame and frame_lock as global
+    latest_frame = None 
+    frame_lock = threading.Lock()  # A lock to prevent race conditions
+    vid = None 
+
+    if input("Press 1 for manual, or anything else to continue: ") == '1': 
+        manual = True # Run in manual mode
     else:
-        vid = start_capture()
+        vid = start_capture() # Run in automatic mode
 
     SERVER_IP = '192.168.43.184'  # EV3's IP address. default: 192.168.43.184
     SERVER_PORT = 1234  # The same port used by the EV3's server.
@@ -48,7 +72,12 @@ def main():
     while True:
         try:
             if not manual:
-                ret, frame = vid.read()
+                # Capture continous video feed in a thread
+                vid_thread = threading.Thread(target=continousFrame, args=(vid,))
+                vid_thread.start()
+                
+                # Get latest frame to use for movement logic
+                frame = get_frame()
                 cmd = calculateCommand(frame)
             else:
                 cmd = input("Enter command (1 for drive, >5 for turn, 404 for nothing): ")
@@ -72,7 +101,11 @@ def main():
             print(f"Exception occurred:", e)
             continue
     
-    stop_capture(vid)
+    # Stop video capture if not manual
+    if vid is not None:
+        stop_capture(vid)
+
+    # Close the socket
     client_socket.close()
 
 if __name__ == '__main__':
