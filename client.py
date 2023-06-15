@@ -39,14 +39,14 @@ def stop_capture(vid):
 
 # Function for continous vid read
 def continousFrame(vid):
+    global latest_frame
     while True:
         ret, frame = vid.read()
         if not ret:
             break
         
         with frame_lock:
-            global latest_frame # Declare as a global variable
-            latest_frame = latest_frame.copy()  # Store the latest frame
+            latest_frame = frame.copy()  # Store the latest frame
 
 # Function for getting the latest frame from continous frame
 def get_frame():
@@ -63,7 +63,12 @@ def main():
     if input("Press 1 for manual, or anything else to continue: ") == '1': 
         manual = True # Run in manual mode
     else:
+        manual = False
         vid = start_capture() # Run in automatic mode
+         
+        # Capture continous video feed in a thread
+        vid_thread = threading.Thread(target=continousFrame, args=(vid,))
+        vid_thread.start()
 
     SERVER_IP = '192.168.43.184'  # EV3's IP address. default: 192.168.43.184
     SERVER_PORT = 1234  # The same port used by the EV3's server.
@@ -72,12 +77,10 @@ def main():
     while True:
         try:
             if not manual:
-                # Capture continous video feed in a thread
-                vid_thread = threading.Thread(target=continousFrame, args=(vid,))
-                vid_thread.start()
-                
                 # Get latest frame to use for movement logic
                 frame = get_frame()
+                if frame is None:
+                    continue  # Skip this iteration if frame is not ready
                 cmd = calculateCommand(frame)
             else:
                 cmd = input("Enter command (1 for drive, >5 for turn, 404 for nothing): ")
@@ -101,9 +104,11 @@ def main():
             print(f"Exception occurred:", e)
             continue
     
-    # Stop video capture if not manual
-    if vid is not None:
-        stop_capture(vid)
+    # Stop video capture and thread
+    if not manual:
+        vid_thread.join()  # Ensure video thread finishes before proceeding
+        if vid is not None:
+            stop_capture(vid)
 
     # Close the socket
     client_socket.close()
