@@ -8,29 +8,27 @@ import math
 # If any of the required information is missing, it returns None.
 def getImportantInfo(frame):
     white_balls, orange = analyseFrame(frame)
-    target, robot = locate_nearest_ball(white_balls, orange, green, blue)
-    if target is None or robot is None or green is None:
-        print("getImportantInfo returning none")
-        return None, None, None
+    robot, heading = findRobot(frame)
+    target = locate_nearest_ball(white_balls, orange, robot)
 
     # Extract the coordinates of the target ball, robot ball, and green ball.
     target = target[0][:2]
+    # make sure it's ints
     robot = int(robot[0]), int(robot[1])
-    green = int(green[0]), int(green[1])
-
-    # Draw a circle around the target ball on the frame.
     cv2.circle(frame, target, 10, (255, 255, 0), 2)
 
     return target, robot, heading   
 
 # This function calculates the angle between three points.
-def calculateAngle(p1, p2, p3):
-    dx21 = p2[0] - p1[0]
-    dy21 = p2[1] - p1[1]
-    dx32 = p3[0] - p2[0]
-    dy32 = p3[1] - p2[1]
-    angle = math.atan2(dy32, dx32) - math.atan2(dy21, dx21)
-    return round(math.degrees(angle))
+def get_heading_to_ball(ball, robot_pos, robot_heading):
+    if ball is None or robot_pos is None:
+        return None
+
+    direction_vector = np.array([ball[0] - robot_pos[0], ball[1] - robot_pos[1]])
+    desired_heading = (np.arctan2(direction_vector[1], direction_vector[0]) * 180 / np.pi + 360) % 360
+    relative_angle = (desired_heading - robot_heading + 180) % 360 - 180
+
+    return relative_angle
 
 # This function calculates the command based on the given frame.
 # It calls the getImportantInfo function to extract the necessary information.
@@ -43,8 +41,8 @@ def calculateCommand(frame):
     if robot is None:
         return 404
     
-    angle = calculateAngle(green, robot, target)
-    if abs(angle) > 5: # error margin
+    angle = get_heading_to_ball(target[0], robot, heading)
+    if abs(angle) > 5: # turn if above 5 degrees
         return angle
     else:
-        return 1
+        return 1 # go straight

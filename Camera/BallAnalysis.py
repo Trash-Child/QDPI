@@ -72,7 +72,6 @@ closest_ball = [None]
 
 
 def findRobot(frame):
-    global lower_green, lower_blue, upper_green, upper_blue
     green_dot = locateColoredBall(frame, [40, 40, 40], [70, 255, 255])
     blue_dot = locateColoredBall(frame, [49, 99, 10], [102, 255, 255])
     cv2.circle(frame, green_dot, 5, [0, 255, 0], 4)
