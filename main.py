@@ -69,7 +69,7 @@ def handle_data(data):
         qdpi.straight(-100)
         return "Command executed"
 
-    elif data >= 5 or data =< -5:
+    elif data >= 5 or data <= -5:
         print("Turning", data)
         qdpi.turn(data)
         return "Command executed"
@@ -91,12 +91,11 @@ def handle_data(data):
 def run_server():
     port = 1234
     server_socket = start_server(port)
-
+    motor_frontWheels.run(500)
     while True:
         print("Waiting for client...")
         client_socket, client_address = server_socket.accept()  # Wait for a new client connection
         print("Client connected:", client_address)
-        #motor_frontWheels.run(500)
         # gyro.reset_angle(0)
         data = handle_client(client_socket)
         print('Server received:', data)
