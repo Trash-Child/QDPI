@@ -69,7 +69,7 @@ def handle_data(data):
         qdpi.straight(-100)
         return "Command executed"
 
-    elif data > 5 or data < -5:
+    elif data >= 5 or data =< -5:
         print("Turning", data)
         qdpi.turn(data)
         return "Command executed"
