@@ -51,7 +51,8 @@ def calculateCommand(frame):
         return 1
 
 # This function extracs the 2D vectors of the obstacle lines and stores them for further logic
-# It calls 
+# It calls detectX to get the line vectors
+# It returns the line vector array
 def getObstacleInfo(frame)
 # Get line vectors of detected obstacles
 lineVectors = detectX(frame)
@@ -60,4 +61,48 @@ if lineVectors = None:
     return None
 
 return lineVectors
+
+# Function to check if path to ball is intersected by the obstacle
+def line_intersection(line1, line2):
+    # line1 and line2 are 2D vectors with the format ((x1, y1), (x2, y2))
+
+    # Calculate the difference between the x-coordinates and the y-coordinates
+    # for each line.
+    xdiff = (line1[0][0] - line1[1][0], line2[0][0] - line2[1][0])
+    ydiff = (line1[0][1] - line1[1][1], line2[0][1] - line2[1][1])
+
+    # The function 'det' calculates the determinant of a 2x2 matrix formed by
+    # the two points on the line. This is a measure of the "signed" area parallelogram
+    # spanned by these points. In this context, it's used to help find the
+    # intersection point of the two lines.
+    def det(a, b):
+        return a[0] * b[1] - a[1] * b[0]
+
+    # Calculate the determinant of xdiff and ydiff. This checks if the two lines are parallel.
+    # If they are, the determinant will be zero and we return False as there is no intersection point.
+    div = det(xdiff, ydiff)
+    if div == 0:
+       return False
+
+    # Compute the determinants of the two lines. The determinant is a special number that can be calculated
+    # from a matrix. In this case, the matrix is a 2x2 matrix formed by the coordinates of the line's points.
+    d = (det(*line1), det(*line2))
+
+    # Calculate the x and y coordinates of the intersection point.
+    x = det(d, xdiff) / div
+    y = det(d, ydiff) / div
+
+    # Return the intersection point.
+    return x, y
+
+
+def avoidObstacles(frame, robot, target, line_vectors):
+    # path is a straight line from robot to target
+    path = (robot, target)
+
+    # Checks if path intersects with obstacle
+    for obstacle_line in line_vectors:
+        if line_intersection(path, obstacle_line):
+            print("Obstacle detected on the path!")
+            # Add logic here to decide how to change the robot's path
 
