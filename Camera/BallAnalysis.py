@@ -1,6 +1,7 @@
 import cv2
 import numpy as np
 import time
+from collections import Counter 
 
 vid = cv2.VideoCapture(0)
 
@@ -25,6 +26,12 @@ def update_continuous_balls(circle, continuous_balls, position_error_margin, siz
     return updated_continuous_balls
 
 
+def most_frequent_points(point_list, error_margin):
+    counter = Counter(point_list)
+    frequent_points = [point for point, freq in counter.items() if freq > error_margin]
+    return frequent_points
+
+
 def update_continuous_corners(corner, continuous_corners, position_error_margin, counter_threshold=20, same_pos_counter_threshold=20):
     x, y = corner
     updated_continuous_corners = []
@@ -44,7 +51,10 @@ def update_continuous_corners(corner, continuous_corners, position_error_margin,
     if not found_match:
         updated_continuous_corners.append((x, y, 0, 0))
 
-    return updated_continuous_corners
+    most_frequent = most_frequent_points([(x, y) for x, y, _, _ in updated_continuous_corners], position_error_margin)
+    
+    return updated_continuous_corners, most_frequent if most_frequent else (x, y)
+
 
 
 def line_intersection(line1, line2):
@@ -82,43 +92,58 @@ def detect_walls(frame, continuous_corners, position_error_margin):
         for i in range(len(lines)):
             for j in range(i + 1, len(lines)):
                 intersection = line_intersection(lines[i][0], lines[j][0])
-                if intersection is not None and 0 <= intersection[0] < frame.shape[1] and 0 <= intersection[1] < frame.shape[0]:
-                    intersections.append(intersection)
+                if intersection is not None:
+                    intersection = (round(intersection[0]), round(intersection[1]))  # Round the pixel values here
+                    if 0 <= intersection[0] < frame.shape[1] and 0 <= intersection[1] < frame.shape[0]:
+                        intersections.append(intersection)
 
     corners = []
+
+    nw, ne, sw, se = (0, 0), (0, 0), (0, 0), (0, 0)  # add this line
+
+    most_frequent_nw = most_frequent_ne = most_frequent_sw = most_frequent_se = None
 
     if intersections:
         nw = min(intersections, key=lambda p: p[0] + p[1])
         ne = max(intersections, key=lambda p: p[0] - p[1])
         sw = max(intersections, key=lambda p: p[1] - p[0])
         se = max(intersections, key=lambda p: p[1] + p[1])
-        corners = [nw, ne, sw, se]
 
-        continuous_corners["nw"] = update_continuous_corners(nw, continuous_corners["nw"], position_error_margin)
-        continuous_corners["ne"] = update_continuous_corners(ne, continuous_corners["ne"], position_error_margin)
-        continuous_corners["sw"] = update_continuous_corners(sw, continuous_corners["sw"], position_error_margin)
-        continuous_corners["se"] = update_continuous_corners(se, continuous_corners["se"], position_error_margin)
-        
-    return frame, walls, corners, continuous_corners
+        continuous_corners["nw"], most_frequent_nw = update_continuous_corners(nw, continuous_corners["nw"], position_error_margin)
+        continuous_corners["ne"], most_frequent_ne = update_continuous_corners(ne, continuous_corners["ne"], position_error_margin)
+        continuous_corners["sw"], most_frequent_sw = update_continuous_corners(sw, continuous_corners["sw"], position_error_margin)
+        continuous_corners["se"], most_frequent_se = update_continuous_corners(se, continuous_corners["se"], position_error_margin)
+
+    return frame, walls, continuous_corners, most_frequent_nw, most_frequent_ne, most_frequent_sw, most_frequent_se
 
 '''
     counter1=0
-    num=continuous_corners["nw",0,0,0]
-    for i in continuous_corners["nw"]:
-        curr_frequency = continuous_corners["nw"].count(i)
+    num=continuous_corners("nw",[0,0,0])
+    for i in continuous_corners("nw",[0,0,0]):
+        curr_frequency = continuous_corners("nw",[]).count(i)
         if(curr_frequency>counter):
             counter = curr_frequency
             num=i
-
         return num
 
-    print(most_frequent(continuous_corners["nw"]))
+    print(most_frequent(continuous_corners("nw",[])))
 '''
+
+
+
+
 
 
 def camera():
     continuous_balls = []
-    continuous_corners = {"nw": [(0, 0, 0, 0)], "ne": [(0, 0, 0, 0)], "sw": [(0, 0, 0, 0)], "se": [(0, 0, 0, 0)]}
+
+    continuous_corners = {
+        "nw": [], 
+        "ne": [], 
+        "sw": [], 
+        "se": []
+    }
+
     position_error_margin = 2
     size_error_margin = 1
     frame_counter = 0
@@ -130,7 +155,7 @@ def camera():
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY) 
         gray = cv2.GaussianBlur(gray, (5, 5), 0) 
 
-        frame, walls, corners, continuous_corners = detect_walls(frame, continuous_corners, position_error_margin)
+        frame, walls, continuous_corners, most_frequent_nw, most_frequent_ne, most_frequent_sw, most_frequent_se = detect_walls(frame, continuous_corners, position_error_margin)
         
         circles = cv2.HoughCircles(gray, cv2.HOUGH_GRADIENT, 1, 20, param1=50, param2=10, minRadius=5, maxRadius=10)
                         
@@ -152,12 +177,21 @@ def camera():
                             cv2.circle(frame, (x, y), r, (0, 255, 0), 2)
                             cv2.circle(frame, (x, y), 2, (0, 0, 255), 3)
 
-        print("Corners detected at:", continuous_corners)
+        print("Most frequent corners:")
+        print("NW:", most_frequent_nw)
+        print("NE:", most_frequent_ne)
+        print("SW:", most_frequent_sw)
+        print("SE:", most_frequent_se)
+        
         cv2.imshow('frame', frame)
         
         key = cv2.waitKey(1) & 0xFF
         if key == ord('q'):
-            print(continuous_corners)
+            # print(continuous_corners)
+            print("NW:", most_frequent_nw)
+            print("NE:", most_frequent_ne)
+            print("SW:", most_frequent_sw)
+            print("SE:", most_frequent_se)
             break
 
         frame_counter += 1
