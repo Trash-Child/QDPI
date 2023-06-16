@@ -60,7 +60,7 @@ lineVectors = detectX(frame)
 if lineVectors = None:
     print("getObstacleInfo returning none")
     return None
-
+# Return line vector array
 return lineVectors
 
 # Function to check if path to ball is intersected by the obstacle
