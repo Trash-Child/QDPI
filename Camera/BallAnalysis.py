@@ -99,7 +99,7 @@ def detect_walls(frame, continuous_corners, position_error_margin):
 
     corners = []
 
-    nw, ne, sw, se = (0, 0), (0, 0), (0, 0), (0, 0)  # add this line
+    nw, ne, sw, se = (0, 0), (0, 0), (0, 0), (0, 0) 
 
     most_frequent_nw = most_frequent_ne = most_frequent_sw = most_frequent_se = None
 
@@ -107,7 +107,7 @@ def detect_walls(frame, continuous_corners, position_error_margin):
         nw = min(intersections, key=lambda p: p[0] + p[1])
         ne = max(intersections, key=lambda p: p[0] - p[1])
         sw = max(intersections, key=lambda p: p[1] - p[0])
-        se = max(intersections, key=lambda p: p[1] + p[1])
+        se = max(intersections, key=lambda p: p[0] + p[1])
 
         continuous_corners["nw"], most_frequent_nw = update_continuous_corners(nw, continuous_corners["nw"], position_error_margin)
         continuous_corners["ne"], most_frequent_ne = update_continuous_corners(ne, continuous_corners["ne"], position_error_margin)
@@ -115,22 +115,6 @@ def detect_walls(frame, continuous_corners, position_error_margin):
         continuous_corners["se"], most_frequent_se = update_continuous_corners(se, continuous_corners["se"], position_error_margin)
 
     return frame, walls, continuous_corners, most_frequent_nw, most_frequent_ne, most_frequent_sw, most_frequent_se
-
-'''
-    counter1=0
-    num=continuous_corners("nw",[0,0,0])
-    for i in continuous_corners("nw",[0,0,0]):
-        curr_frequency = continuous_corners("nw",[]).count(i)
-        if(curr_frequency>counter):
-            counter = curr_frequency
-            num=i
-        return num
-
-    print(most_frequent(continuous_corners("nw",[])))
-'''
-
-
-
 
 
 
