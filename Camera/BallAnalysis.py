@@ -144,4 +144,4 @@ def locate_nearest_ball(continuous_balls, orange_ball_location, robot):
         closest_distance = distance
         closest_ball[0] = orange_ball_location
 
-    return closest_ball, robot
+    return closest_ball

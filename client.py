@@ -3,6 +3,7 @@ import cv2
 from movementLogic import calculateCommand
 import time
 import errno
+import traceback
 
 # Function to start the client and connect to the server
 def start_client(SERVER_IP, SERVER_PORT):
@@ -13,8 +14,9 @@ def start_client(SERVER_IP, SERVER_PORT):
 
 # Function to send data to the server and receive a reply
 def send_data(client_socket, data):
-    if isinstance(data, int):
-        data = str(data)  # Convert integer to string
+    if isinstance(data, int) or isinstance(data, float):
+        data = round(data)
+        data = str(data)
     data = data.encode()  # Convert data to bytes
     total_sent = 0
     while total_sent < len(data):
@@ -37,7 +39,7 @@ def main():
     else:
         vid = cv2.VideoCapture(0)
 
-    SERVER_IP = '192.168.43.81'  # EV3's IP address. default: 192.168.43.184
+    SERVER_IP = '192.168.43.184'  # EV3's IP address. default: 192.168.43.184
     SERVER_PORT = 1234  # The same port used by the EV3's server.
     client_socket = start_client(SERVER_IP, SERVER_PORT)
     cmd = ""
@@ -65,14 +67,15 @@ def main():
             while reply != 'Command executed':
                 reply = client_socket.recv(1024).decode()
             print('Done')
-            
+            pass
+
         except Exception as e:
             if hasattr(e, 'winerror') or hasattr(e, 'errno'):
                 if e.winerror == 10053 or e.errno == errno.WSAECONNRESET:
                     print('Connection was abruptly closed')
                     break
-            print(f"Exception occurred:", e)
-            continue
+            traceback.print_exc()
+
     
     stop_capture(vid)
     client_socket.close()

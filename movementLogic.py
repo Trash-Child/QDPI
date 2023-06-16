@@ -1,6 +1,7 @@
 from Camera.BallAnalysis import analyseFrame, locate_nearest_ball, findRobot
 import cv2
 import math
+import numpy as np
 
 # This function extracts important information from a frame captured by a camera.
 # It analyzes the frame to locate white balls, orange balls, green balls, and blue balls.
@@ -13,9 +14,13 @@ def getImportantInfo(frame):
 
     # Extract the coordinates of the target ball, robot ball, and green ball.
     target = target[0][:2]
+    target = int(target[0]), int(target[1])
     # make sure it's ints
     robot = int(robot[0]), int(robot[1])
-    cv2.circle(frame, target, 10, (255, 255, 0), 2)
+    try:
+        cv2.circle(frame, target, 10, (255, 255, 0), 2)
+    except Exception as e:
+        print("couldn't draw target")
 
     return target, robot, heading   
 
@@ -41,7 +46,7 @@ def calculateCommand(frame):
     if robot is None:
         return 404
     
-    angle = get_heading_to_ball(target[0], robot, heading)
+    angle = get_heading_to_ball(target, robot, heading)
     if abs(angle) > 5: # turn if above 5 degrees
         return angle
     else:
