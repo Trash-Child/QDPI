@@ -1,4 +1,5 @@
 from Camera.BallAnalysis import analyseFrame, locate_nearest_ball
+from Camera.ObstacleAnalysis import detectX
 import cv2
 import math
 
@@ -48,3 +49,15 @@ def calculateCommand(frame):
         return angle
     else:
         return 1
+
+# This function extracs the 2D vectors of the obstacle lines and stores them for further logic
+# It calls 
+def getObstacleInfo(frame)
+# Get line vectors of detected obstacles
+lineVectors = detectX(frame)
+if lineVectors = None:
+    print("getObstacleInfo returning none")
+    return None
+
+return lineVectors
+
