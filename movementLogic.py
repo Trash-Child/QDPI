@@ -64,7 +64,7 @@ if lineVectors = None:
 return lineVectors
 
 # Function to check if path to ball is intersected by the obstacle
-def line_intersection(line1, line2):
+def lineIntersection(line1, line2):
     # line1 and line2 are 2D vectors with the format ((x1, y1), (x2, y2))
 
     # Calculate the difference between the x-coordinates and the y-coordinates
@@ -98,12 +98,40 @@ def line_intersection(line1, line2):
 
 
 def avoidObstacles(frame, robot, target, line_vectors):
-    # path is a straight line from robot to target
+    # Path is a straight line from robot to target
     path = (robot, target)
+    
+    # Loop until a clear path is found
+    while True:
+        # Assume path is clear at the beginning of each iteration
+        path_is_clear = True
+        
+        # Check if path intersects with any obstacle
+        for obstacleLine in line_vectors:
+            intersection_point = lineIntersection(path, obstacleLine)
+            if intersection_point:
+                path_is_clear = False  # Set path_is_clear to False if an obstacle is found
+                
+                # Determine the direction of the obstacle relative to the robot
+                if intersection_point[0] < robot[0]:  # Obstacle is to the left
+                    # Move the robot slightly to the right by increasing the x-coordinate
+                    # And keeping the y-coordinate same
+                    robot = (robot[0] + 10, robot[1])
+                else:  # Obstacle is to the right
+                    # Move the robot slightly to the left by decreasing the x-coordinate
+                    # And keeping the y-coordinate same
+                    robot = (robot[0] - 10, robot[1])
+                
+                # Update the robot's path
+                path = (robot, target)
+                break  # Exit the inner for-loop to start checking the new path
+                
+        # If path is clear, exit the loop
+        if path_is_clear:
+            break
 
-    # Checks if path intersects with obstacle
-    for obstacle_line in line_vectors:
-        if line_intersection(path, obstacle_line):
-            print("Obstacle detected on the path!")
-            # Add logic here to decide how to change the robot's path
+    # At this point, a clear path should be found, and we can proceed to the target.
+    # The function returns the new robot position so it can be used in other parts of your program.
+    return robot
+
 
