@@ -47,8 +47,9 @@ def main():
         try:
             if not manual:
                 ret, frame = vid.read()
-                cmd = calculateCommand(frame)
-                cv2.imshow('frame', frame)
+                ret2, debugFrame = vid.read()
+                cmd = calculateCommand(frame, debugFrame)
+                cv2.imshow('debugFrame', debugFrame)
                 cv2.waitKey(1)
             else:
                 while True:
@@ -60,14 +61,14 @@ def main():
                         break
                     except Exception as e:
                         print("Not an integer")
-                
+                        
             reply = send_data(client_socket, cmd)
             print('Sent:', cmd)
             print('Waiting for command execution...')
             while reply != 'Command executed':
                 reply = client_socket.recv(1024).decode()
             print('Done')
-            pass
+            
 
         except Exception as e:
             if hasattr(e, 'winerror') or hasattr(e, 'errno'):
@@ -76,7 +77,6 @@ def main():
                     break
             traceback.print_exc()
 
-    
     stop_capture(vid)
     client_socket.close()
 

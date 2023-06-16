@@ -46,13 +46,14 @@ def handle_client(client_socket):
         if not data:
             break
         reply = data.decode()
-        send_reply(client_socket, handle_data(data))
         print('Server received:', reply)
+        send_reply(client_socket, handle_data(data))
     client_socket.close()
 
 # Function to handle the data received from the client and execute the corresponding command
 def handle_data(data):
     data = int(data)
+    wait(1000)
     
     if data == 404:
         print("Error 404")
@@ -60,9 +61,8 @@ def handle_data(data):
 
     elif data == 1:
         print("going straight")
-        # correction = (0 - gyro.angle())*1
-        qdpi.straight(100)
         
+        qdpi.straight(100)
         return "Command executed"
 
     elif data == -1:

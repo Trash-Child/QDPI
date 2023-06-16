@@ -71,22 +71,23 @@ def locateColoredBall(frame, lowerRGB, upperRGB):
 closest_ball = [None]
 
 
-def findRobot(frame):
-    green_dot = locateColoredBall(frame, [40, 40, 40], [70, 255, 255])
-    blue_dot = locateColoredBall(frame, [49, 99, 10], [102, 255, 255])
-    cv2.circle(frame, green_dot, 5, [0, 255, 0], 4)
-    cv2.circle(frame, blue_dot, 5, [0, 0, 255], 4)
+def findRobot(frame, debugFrame):
+    green_dot = locateColoredBall(frame, [36, 40, 40], [89, 255, 255])
+    blue_dot = locateColoredBall(frame, [90, 40, 40], [99, 255, 255])
     if not green_dot or not blue_dot:
         print("robot not found")
         return None
+
+    cv2.circle(debugFrame, green_dot, 5, [0, 255, 0], 4)
+    cv2.circle(debugFrame, blue_dot, 5, [255, 0, 0], 4)
     cx = (green_dot[0] + blue_dot[0]) // 2
     cy = (green_dot[1] + blue_dot[1]) // 2
-    heading = (np.arctan2(blue_dot[1] - green_dot[1], blue_dot[0] - green_dot[0]) * 180 / np.pi + 90) % 360
+    heading = (np.arctan2(blue_dot[1] - green_dot[1], blue_dot[0] - green_dot[0]) * 180 / np.pi +180) % 360
 
     return np.array([cx, cy]), heading
 
 # Function to analyze the frame and locate balls
-def analyseFrame(frame):
+def analyseFrame(frame, debugFrame):
     global closest_ball
     continuous_balls = []
     position_error_margin = 25
@@ -105,17 +106,18 @@ def analyseFrame(frame):
             cX = int(M["m10"] / M["m00"])
             cY = int(M["m01"] / M["m00"])
             r = np.sqrt(cv2.contourArea(cnt) / np.pi)
-            
+            if r < 8:
+                continue
             continuous_balls = update_continuous_balls((cX, cY, r), continuous_balls, position_error_margin, size_error_margin)
-            cv2.circle(frame, (cX, cY), int(r), (0, 255, 0), 2)
-            cv2.circle(frame, (cX, cY), 2, (0, 0, 255), 3)
+            cv2.circle(debugFrame, (cX, cY), int(r), (0, 255, 0), 2)
+            cv2.circle(debugFrame, (cX, cY), 2, (0, 0, 255), 3)
 
             if closest_ball[0] and cX == closest_ball[0][0] and cY == closest_ball[0][1]:
-                cv2.circle(frame, (cX, cY), int(r) + 10, (255, 0, 0), 4)  # Draw an extra circle around the closest ball
+                cv2.circle(debugFrame, (cX, cY), int(r) + 10, (255, 0, 0), 4)  # Draw an extra circle around the closest ball
     
         orange_ball_location = locateColoredBall(frame, [10, 100, 100], [20, 255, 255])
         if orange_ball_location:
-            cv2.circle(frame, orange_ball_location, 5, (255, 127, 0), 4)
+            cv2.circle(debugFrame, orange_ball_location, 5, (255, 127, 0), 4)
 
     return continuous_balls, orange_ball_location
 
