@@ -3,7 +3,7 @@ import numpy as np
 import math
 
 
-def detect_x(frame):
+def detectX(frame):
     # Convert frame to HSV
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
     
@@ -59,35 +59,7 @@ def detect_x(frame):
                 vector = (x2 - x1, y2 - y1)
                 line_vectors.append(vector)
                 cv2.line(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
-    
-    # Draw the region of interest on the frame
-    cv2.polylines(frame, roi_corners, True, (255, 0, 0), 2)
 
-    # Returning line vectors along with the frame
-    return frame, line_vectors
+    # Returning line vectors
+    return line_vectors
 
-
-def camera():
-    vid = cv2.VideoCapture(0)
-    while vid.isOpened():
-        ret, frame = vid.read()
-        if not ret:
-            break
-
-        frame, line_vectors = detect_x(frame)
-        
-        # Print line vectors
-        print(line_vectors)
-
-        # Display the frame with detected X shapes
-        cv2.imshow('frame', frame)
-
-        # Press 'q' key to stop display
-        key = cv2.waitKey(1) & 0xFF
-        if key == ord('q'):
-            break
-
-    vid.release()
-    cv2.destroyAllWindows()
-
-camera()
