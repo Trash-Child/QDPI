@@ -1,6 +1,7 @@
 import cv2
 import numpy as np
 import time
+from collections import Counter 
 import threading
 
 # Function to update the list of continuous balls based on the detected circle
@@ -29,6 +30,117 @@ def update_continuous_balls(circle, continuous_balls, position_error_margin, siz
 
     return updated_continuous_balls
 
+
+def most_frequent_points(point_list, error_margin):
+    counter = Counter(point_list)
+    frequent_points = [point for point, freq in counter.items() if freq > error_margin]
+    return frequent_points
+
+
+def update_continuous_midpoints(midpoint, continuous_midpoints, position_error_margin, counter_threshold=10):
+    x, y = midpoint
+    updated_continuous_midpoints = []
+    found_match = False
+    for (prev_x, prev_y, count) in continuous_midpoints:
+        position_diff = np.sqrt((x - prev_x)**2 + (y - prev_y)**2)
+        if position_diff <= position_error_margin:
+            if not found_match:
+                updated_continuous_midpoints.append((x, y, 0))
+                found_match = True
+            else:
+                updated_continuous_midpoints.append((prev_x, prev_y, count))
+        else:
+            if count < counter_threshold:
+                updated_continuous_midpoints.append((prev_x, prev_y, count + 1))
+
+    if not found_match:
+        updated_continuous_midpoints.append((x, y, 0))
+
+    most_frequent = most_frequent_points([(x, y) for x, y, _ in updated_continuous_midpoints], position_error_margin)
+    
+    return updated_continuous_midpoints, most_frequent if most_frequent else (x, y)
+
+
+def update_continuous_corners(corner, continuous_corners, position_error_margin, counter_threshold=20, same_pos_counter_threshold=20):
+    x, y = corner
+    updated_continuous_corners = []
+    found_match= False
+    for (prev_x, prev_y, count, same_pos_count) in continuous_corners:
+        position_diff = np.sqrt((x - prev_x)**2 + (y - prev_y)**2)
+        if position_diff <= position_error_margin:
+            if not found_match:
+                updated_continuous_corners.append((x,y,0,same_pos_count+1 if position_diff == 0 else 0))
+                found_match = True
+            else:
+                updated_continuous_corners.append((prev_x,prev_y,count,same_pos_count))
+        else:
+            if count < counter_threshold and same_pos_count<same_pos_counter_threshold:
+                updated_continuous_corners.append((prev_x, prev_y, count + 1, same_pos_count))
+
+    if not found_match:
+        updated_continuous_corners.append((x, y, 0, 0))
+
+    most_frequent = most_frequent_points([(x, y) for x, y, _, _ in updated_continuous_corners], position_error_margin)
+    
+    return updated_continuous_corners, most_frequent if most_frequent else (x, y)
+
+
+def line_intersection(line1, line2):
+    x1, y1, x2, y2 = line1
+    x3, y3, x4, y4 = line2
+
+    det1 = (x1 - x2) * (y3 - y4)
+    det2 = (y1 - y2) * (x3 - x4)
+    d = det1 - det2
+
+    if d != 0:  
+        px = ((x1*y2 - y1*x2) * (x3 - x4) - (x1 - x2) * (x3*y4 - y3*x4)) / d
+        py = ((x1*y2 - y1*x2) * (y3 - y4) - (y1 - y2) * (x3*y4 - y3*x4)) / d
+        return (px, py)
+    else:
+        return None
+def detect_walls(frame, continuous_corners, position_error_margin):
+    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    
+    edges = cv2.Canny(gray, 50, 150, apertureSize=3)
+
+    lines = cv2.HoughLinesP(edges, 1, np.pi / 180, 10, minLineLength=100, maxLineGap=10)
+    walls = []
+    if lines is not None:
+        for line in lines:
+            x1, y1, x2, y2 = line[0]
+            walls.append(((x1, y1), (x2, y2)))
+            cv2.line(frame, (x1, y1), (x2, y2), (0, 0, 255), 2)
+
+    intersections = []
+
+    if lines is not None:
+        for i in range(len(lines)):
+            for j in range(i + 1, len(lines)):
+                intersection = line_intersection(lines[i][0], lines[j][0])
+                if intersection is not None:
+                    intersection = (round(intersection[0]), round(intersection[1]))  # Round the pixel values here
+                    if 0 <= intersection[0] < frame.shape[1] and 0 <= intersection[1] < frame.shape[0]:
+                        intersections.append(intersection)
+
+    corners = []
+
+    nw, ne, sw, se = (0, 0), (0, 0), (0, 0), (0, 0) 
+
+    most_frequent_nw = most_frequent_ne = most_frequent_sw = most_frequent_se = None
+
+    if intersections:
+        nw = min(intersections, key=lambda p: p[0] + p[1])
+        ne = max(intersections, key=lambda p: p[0] - p[1])
+        sw = max(intersections, key=lambda p: p[1] - p[0])
+        se = max(intersections, key=lambda p: p[0] + p[1])
+
+        continuous_corners["nw"], most_frequent_nw = update_continuous_corners(nw, continuous_corners["nw"], position_error_margin)
+        continuous_corners["ne"], most_frequent_ne = update_continuous_corners(ne, continuous_corners["ne"], position_error_margin)
+        continuous_corners["sw"], most_frequent_sw = update_continuous_corners(sw, continuous_corners["sw"], position_error_margin)
+        continuous_corners["se"], most_frequent_se = update_continuous_corners(se, continuous_corners["se"], position_error_margin)
+
+    return frame, walls, continuous_corners, most_frequent_nw, most_frequent_ne, most_frequent_sw, most_frequent_se
 
 def locateColoredBall(frame, lowerRGB, upperRGB):
     lower_color = np.array(lowerRGB)
@@ -88,6 +200,17 @@ def findRobot(frame, debugFrame):
 
 # Function to analyze the frame and locate balls
 def analyseFrame(frame, debugFrame):
+    continuous_corners = {
+        "nw": [], 
+        "ne": [], 
+        "sw": [], 
+        "se": []
+    }
+
+    continuous_midpoints = {
+        "w": [], 
+        "e": []
+    }
     global closest_ball
     continuous_balls = []
     position_error_margin = 25
@@ -95,6 +218,7 @@ def analyseFrame(frame, debugFrame):
     orange_ball_location = None
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     _, thresh = cv2.threshold(gray, 220, 255, cv2.THRESH_BINARY)  # Filter out low light pixels
+    frame, walls, continuous_corners, most_frequent_nw, most_frequent_ne, most_frequent_sw, most_frequent_se = detect_walls(frame, continuous_corners, position_error_margin)
     cv2.imshow('thresh', thresh)
     cv2.waitKey(1)
     contours, _ = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
@@ -116,8 +240,23 @@ def analyseFrame(frame, debugFrame):
                 cv2.circle(debugFrame, (cX, cY), int(r) + 10, (255, 0, 0), 4)  # Draw an extra circle around the closest ball
     
         #orange_ball_location = locateColoredBall(frame, [10, 100, 100], [20, 255, 255])
-        if orange_ball_location:
-            cv2.circle(debugFrame, orange_ball_location, 5, (255, 127, 0), 4)
+    if orange_ball_location:
+        cv2.circle(debugFrame, orange_ball_location, 5, (255, 127, 0), 4)
+    if most_frequent_nw and most_frequent_sw:
+        mid_w = ((most_frequent_nw[0] + most_frequent_sw[0]) // 2, (most_frequent_nw[1] + most_frequent_sw[1]) // 2)
+        continuous_midpoints["w"], mid_w = update_continuous_midpoints(mid_w, continuous_midpoints["w"], position_error_margin)
+    
+    if most_frequent_ne and most_frequent_se:
+        mid_e = ((most_frequent_ne[0] + most_frequent_se[0]) // 2, (most_frequent_ne[1] + most_frequent_se[1]) // 2)
+        continuous_midpoints["e"], mid_e = update_continuous_midpoints(mid_e, continuous_midpoints["e"], position_error_margin)
+    print("Most frequent corners:")
+    print("NW:", most_frequent_nw)
+    print("NE:", most_frequent_ne)
+    print("SW:", most_frequent_sw)
+    print("SE:", most_frequent_se)
+    print("Midpoints:")
+    print("West Goal:", mid_w)
+    print("East Goal:", mid_e)
 
     return continuous_balls, orange_ball_location
 
