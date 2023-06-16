@@ -14,7 +14,10 @@ def getImportantInfo(frame, debugFrame):
 
     # Extract the coordinates of the target ball, robot ball, and green ball.
     target = target[0][:2]
-    target = int(target[0]), int(target[1])
+    try:
+        target = int(target[0]), int(target[1])
+    except Exception as e:
+        print("No target")
     robot = int(robot[0]), int(robot[1])
     return target, robot, heading   
 
@@ -27,7 +30,7 @@ def get_heading_to_ball(ball, robot_pos, robot_heading):
     desired_heading = (np.arctan2(direction_vector[1], direction_vector[0]) * 180 / np.pi +180) % 360
     relative_angle = (desired_heading - robot_heading + 180) % 360 - 180
 
-    return relative_angle
+    return relative_angle-85
 
 # This function calculates the command based on the given frame.
 # It calls the getImportantInfo function to extract the necessary information.
