@@ -32,6 +32,31 @@ def most_frequent_points(point_list, error_margin):
     return frequent_points
 
 
+def update_continuous_midpoints(midpoint, continuous_midpoints, position_error_margin, counter_threshold=10):
+    x, y = midpoint
+    updated_continuous_midpoints = []
+    found_match = False
+    for (prev_x, prev_y, count) in continuous_midpoints:
+        position_diff = np.sqrt((x - prev_x)**2 + (y - prev_y)**2)
+        if position_diff <= position_error_margin:
+            if not found_match:
+                updated_continuous_midpoints.append((x, y, 0))
+                found_match = True
+            else:
+                updated_continuous_midpoints.append((prev_x, prev_y, count))
+        else:
+            if count < counter_threshold:
+                updated_continuous_midpoints.append((prev_x, prev_y, count + 1))
+
+    if not found_match:
+        updated_continuous_midpoints.append((x, y, 0))
+
+    most_frequent = most_frequent_points([(x, y) for x, y, _ in updated_continuous_midpoints], position_error_margin)
+    
+    return updated_continuous_midpoints, most_frequent if most_frequent else (x, y)
+
+
+
 def update_continuous_corners(corner, continuous_corners, position_error_margin, counter_threshold=20, same_pos_counter_threshold=20):
     x, y = corner
     updated_continuous_corners = []
@@ -128,6 +153,11 @@ def camera():
         "se": []
     }
 
+    continuous_midpoints = {
+        "w": [], 
+        "e": []
+    }
+
     position_error_margin = 2
     size_error_margin = 1
     frame_counter = 0
@@ -161,21 +191,31 @@ def camera():
                             cv2.circle(frame, (x, y), r, (0, 255, 0), 2)
                             cv2.circle(frame, (x, y), 2, (0, 0, 255), 3)
 
+
+        if most_frequent_nw and most_frequent_sw:
+            mid_w = ((most_frequent_nw[0] + most_frequent_sw[0]) // 2, (most_frequent_nw[1] + most_frequent_sw[1]) // 2)
+            continuous_midpoints["w"], mid_w = update_continuous_midpoints(mid_w, continuous_midpoints["w"], position_error_margin)
+        
+        if most_frequent_ne and most_frequent_se:
+            mid_e = ((most_frequent_ne[0] + most_frequent_se[0]) // 2, (most_frequent_ne[1] + most_frequent_se[1]) // 2)
+            continuous_midpoints["e"], mid_e = update_continuous_midpoints(mid_e, continuous_midpoints["e"], position_error_margin)
+
+
+
         print("Most frequent corners:")
         print("NW:", most_frequent_nw)
         print("NE:", most_frequent_ne)
         print("SW:", most_frequent_sw)
         print("SE:", most_frequent_se)
+
+        print("Midpoints:")
+        print("West Goal:", mid_w)
+        print("East Goal:", mid_e)
         
         cv2.imshow('frame', frame)
         
         key = cv2.waitKey(1) & 0xFF
         if key == ord('q'):
-            # print(continuous_corners)
-            print("NW:", most_frequent_nw)
-            print("NE:", most_frequent_ne)
-            print("SW:", most_frequent_sw)
-            print("SE:", most_frequent_se)
             break
 
         frame_counter += 1
