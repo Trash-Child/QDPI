@@ -241,7 +241,7 @@ def analyseFrame(frame, debugFrame):
             if closest_ball[0] and cX == closest_ball[0][0] and cY == closest_ball[0][1]:
                 cv2.circle(debugFrame, (cX, cY), int(r) + 10, (255, 0, 0), 4)  # Draw an extra circle around the closest ball
     
-        #orange_ball_location = locateColoredBall(frame, [10, 100, 100], [20, 255, 255])
+    orange_ball_location = locateColoredBall(frame, [10, 100, 100], [20, 255, 255])
     if orange_ball_location:
         cv2.circle(debugFrame, orange_ball_location, 5, (255, 127, 0), 4)
 
@@ -252,15 +252,6 @@ def analyseFrame(frame, debugFrame):
     if most_frequent_ne and most_frequent_se:
         mid_e = ((most_frequent_ne[0] + most_frequent_se[0]) // 2, (most_frequent_ne[1] + most_frequent_se[1]) // 2)
         continuous_midpoints["e"], mid_e = update_continuous_midpoints(mid_e, continuous_midpoints["e"], position_error_margin)
-    #print("Most frequent corners:")
-    #print("NW:", most_frequent_nw)
-    #print("NE:", most_frequent_ne)
-    #print("SW:", most_frequent_sw)
-    #print("SE:", most_frequent_se)
-    #print("Midpoints:")
-    #print("West Goal:", mid_w)
-    #rint("East Goal:", mid_e)
-
     return continuous_balls, orange_ball_location
 
 
