@@ -201,7 +201,7 @@ def findRobot(frame, debugFrame):
     return np.array([cx, cy]), heading
 
 
-def goToGoal(mid_w, mid_w, robot):
+# def goToGoal(mid_w, mid_w, robot):
 
 
 # Function to analyze the frame and locate balls
