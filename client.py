@@ -61,14 +61,11 @@ def main():
     while True:
         try:
             if noBalls:
-                mid_w, mid_e = analyseFrame(frame, debugFrame, noBalls)
-                
-
-                
+            
             if not manual:
                 ret, frame = vid.read()
                 ret2, debugFrame = vid.read()
-                cmd = calculateCommand(frame, debugFrame, False)
+                cmd, dist = calculateCommand(frame, debugFrame)
                 cv2.imshow('debugFrame', debugFrame)
                 cv2.waitKey(1)
             else:
@@ -76,9 +73,7 @@ def main():
             reply = send_data(client_socket, cmd)
             print('Sent:', cmd)
             if cmd == 1:
-                if not manual:
-                    dist = calculate_distance(frame, debugFrame)
-                else:
+                if manual:
                     dist = getManualCommand()
                 reply = send_data(client_socket, dist)
                 print('Sent:', cmd)

@@ -8,10 +8,11 @@ import numpy as np
 # It then finds the nearest white ball and the nearest robot ball.
 # If any of the required information is missing, it returns None.
 def getImportantInfo(frame, debugFrame):
-    white_balls, orange = analyseFrame(frame, debugFrame)
+    mid_w, mid_e, white_balls, orange = analyseFrame(frame, debugFrame)
     robot, heading = findRobot(frame, debugFrame)
     target = locate_nearest_ball(white_balls, orange, robot)
-
+    if target == None:
+        
     # Extract the coordinates of the target ball, robot ball, and green ball.
     target = target[0][:2]
     try:
@@ -21,10 +22,9 @@ def getImportantInfo(frame, debugFrame):
     robot = int(robot[0]), int(robot[1])
     return target, robot, heading
 
-def calculate_distance(frame, debugframe):
-    target_pos, robot_pos, _ = getImportantInfo(frame, debugframe)
-    robot_coords = np.array(robot_pos)
-    target_coords = np.array(target_pos)
+def calculate_distance(robot, target):
+    robot = robot[0][:2]
+    target = target[0][:2]
     difference = robot_coords - target_coords
     # Pythagorean theorem
     distance = np.sqrt(np.sum(np.square(difference)))
@@ -42,6 +42,10 @@ def get_heading_to_ball(ball, robot_pos, robot_heading):
 
     return relative_angle-85
 
+
+def calculateCommandToGoal(frame, debugFrame):
+    mid_w, mid_e, _, _ = analyseFrame(frame, debugFrame, noBalls)
+
 # This function calculates the command based on the given frame.
 # It calls the getImportantInfo function to extract the necessary information.
 # If the robot ball is missing, it returns 404.
@@ -57,4 +61,4 @@ def calculateCommand(frame, debugFrame):
     if abs(angle) > 5: # turn if above 5 degrees
         return angle
     else:
-        return 1 # go straight
+        return 1, calculateDistance(robot, target) # go straight
