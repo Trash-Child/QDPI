@@ -47,11 +47,26 @@ def handle_client(client_socket):
             break
         reply = data.decode()
         print('Server received:', reply)
-        send_reply(client_socket, handle_data(data))
+        send_reply(client_socket, handle_data(data, client_socket))
     client_socket.close()
 
+
+def getDist(client_socket):
+    print("Waiting for dist...")
+    dist = client_socket.recv(1024)
+    dist = dist.decode()
+    dist = int(dist)
+    if not dist:
+        print("dist error")
+        return 0
+    if dist < 250:
+        return 300
+    else:
+        return (dist*26/10)-100
+
+
 # Function to handle the data received from the client and execute the corresponding command
-def handle_data(data):
+def handle_data(data, client_socket):
     data = int(data)
     wait(1000)
     
@@ -60,8 +75,7 @@ def handle_data(data):
         return "Command executed"
 
     elif data == 1:
-        print("going straight")
-        qdpi.straight(200)
+        qdpi.straight(int(getDist(client_socket)))
         return "Command executed"
 
     elif data == -1:

@@ -19,7 +19,17 @@ def getImportantInfo(frame, debugFrame):
     except Exception as e:
         print("No target")
     robot = int(robot[0]), int(robot[1])
-    return target, robot, heading   
+    return target, robot, heading
+
+def calculate_distance(frame, debugframe):
+    target_pos, robot_pos, _ = getImportantInfo(frame, debugframe)
+    robot_coords = np.array(robot_pos)
+    target_coords = np.array(target_pos)
+    difference = robot_coords - target_coords
+    # Pythagorean theorem
+    distance = np.sqrt(np.sum(np.square(difference)))
+
+    return distance
 
 # This function calculates the angle between three points.
 def get_heading_to_ball(ball, robot_pos, robot_heading):

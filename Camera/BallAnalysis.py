@@ -232,7 +232,7 @@ def analyseFrame(frame, debugFrame):
             cX = int(M["m10"] / M["m00"])
             cY = int(M["m01"] / M["m00"])
             r = np.sqrt(cv2.contourArea(cnt) / np.pi)
-            if r < 5:
+            if r < 4:
                 continue
             continuous_balls = update_continuous_balls((cX, cY, r), continuous_balls, position_error_margin, size_error_margin)
             cv2.circle(debugFrame, (cX, cY), int(r), (0, 255, 0), 2)
@@ -252,14 +252,14 @@ def analyseFrame(frame, debugFrame):
     if most_frequent_ne and most_frequent_se:
         mid_e = ((most_frequent_ne[0] + most_frequent_se[0]) // 2, (most_frequent_ne[1] + most_frequent_se[1]) // 2)
         continuous_midpoints["e"], mid_e = update_continuous_midpoints(mid_e, continuous_midpoints["e"], position_error_margin)
-    print("Most frequent corners:")
-    print("NW:", most_frequent_nw)
-    print("NE:", most_frequent_ne)
-    print("SW:", most_frequent_sw)
-    print("SE:", most_frequent_se)
-    print("Midpoints:")
-    print("West Goal:", mid_w)
-    print("East Goal:", mid_e)
+    #print("Most frequent corners:")
+    #print("NW:", most_frequent_nw)
+    #print("NE:", most_frequent_ne)
+    #print("SW:", most_frequent_sw)
+    #print("SE:", most_frequent_se)
+    #print("Midpoints:")
+    #print("West Goal:", mid_w)
+    #rint("East Goal:", mid_e)
 
     return continuous_balls, orange_ball_location
 

@@ -1,6 +1,6 @@
 import socket
 import cv2
-from movementLogic import calculateCommand
+from movementLogic import calculateCommand, calculate_distance
 import time
 import errno
 import traceback
@@ -17,13 +17,15 @@ def send_data(client_socket, data):
     if isinstance(data, int) or isinstance(data, float):
         data = round(data)
         data = str(data)
-    data = data.encode()  # Convert data to bytes
+    encodedData = data.encode()  # Convert data to bytes
     total_sent = 0
-    while total_sent < len(data):
-        sent = client_socket.send(data[total_sent:])
+    while total_sent < len(encodedData):
+        sent = client_socket.send(encodedData[total_sent:])
         if sent == 0:  # Socket connection broken
             raise RuntimeError("Socket connection broken")
         total_sent += sent
+    if data == '1':
+        return None
     reply = client_socket.recv(1024).decode()
     return reply
 
@@ -31,6 +33,18 @@ def send_data(client_socket, data):
 def stop_capture(vid):
     vid.release()
     cv2.destroyAllWindows()
+
+def getManualCommand():
+    cmd = ""
+    while True:
+        if cmd != None and cmd == '?':
+            print("1: Forward \n-1: Reverse \n2: Open gate \nabove 5 or below -5: rotate given amount\nQ: stop the program and server")
+        cmd = input("Enter command (? for help): ")
+        try:
+            cmd = int(cmd)
+            return cmd
+        except Exception as e:
+            print("Not an integer")
 
 def main():
     manual = False
@@ -52,18 +66,16 @@ def main():
                 cv2.imshow('debugFrame', debugFrame)
                 cv2.waitKey(1)
             else:
-                while True:
-                    if cmd != None and cmd == '?':
-                        print("1: Forward \n-1: Reverse \n2: Open gate \nabove 5 or below -5: rotate given amount\nQ: stop the program and server")
-                    cmd = input("Enter command (? for help): ")
-                    try:
-                        cmd = int(cmd)
-                        break
-                    except Exception as e:
-                        print("Not an integer")
-                        
+                cmd = getManualCommand()
             reply = send_data(client_socket, cmd)
             print('Sent:', cmd)
+            if cmd == 1:
+                if not manual:
+                    dist = calculate_distance(frame, debugFrame)
+                else:
+                    dist = getManualCommand()
+                reply = send_data(client_socket, dist)
+                print('Sent:', cmd)
             print('Waiting for command execution...')
             while reply != 'Command executed':
                 reply = client_socket.recv(1024).decode()
