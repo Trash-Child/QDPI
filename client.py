@@ -51,9 +51,9 @@ def main():
     if input("Press 1 for manual, or anything else to continue: ") == '1':
         manual = True
     else:
-        vid = cv2.VideoCapture(1)
+        vid = cv2.VideoCapture(0)
 
-    SERVER_IP = '192.168.43.184'  # EV3's IP address. default: 192.168.43.184
+    SERVER_IP = '192.168.43.81'  # EV3's IP address. default: 192.168.43.184
     SERVER_PORT = 1234  # The same port used by the EV3's server.
     client_socket = start_client(SERVER_IP, SERVER_PORT)
     cmd = ""
@@ -78,7 +78,7 @@ def main():
             if cmd == 1:
                 if manual:
                     dist = getManualCommand()
-                    
+
                 reply = send_data(client_socket, dist)
                 print('Sent:', cmd)
             print('Waiting for command execution...')
