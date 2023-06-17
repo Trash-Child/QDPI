@@ -63,6 +63,8 @@ def main():
             if noBalls:
                 mid_w, mid_e = analyseFrame(frame, debugFrame, noBalls)
                 
+
+                
             if not manual:
                 ret, frame = vid.read()
                 ret2, debugFrame = vid.read()
