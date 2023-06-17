@@ -51,18 +51,22 @@ def main():
     if input("Press 1 for manual, or anything else to continue: ") == '1':
         manual = True
     else:
-        vid = cv2.VideoCapture(0)
+        vid = cv2.VideoCapture(1)
 
     SERVER_IP = '192.168.43.184'  # EV3's IP address. default: 192.168.43.184
     SERVER_PORT = 1234  # The same port used by the EV3's server.
     client_socket = start_client(SERVER_IP, SERVER_PORT)
     cmd = ""
+    noBalls = False
     while True:
         try:
+            if noBalls:
+                mid_w, mid_e = analyseFrame(frame, debugFrame, noBalls)
+                
             if not manual:
                 ret, frame = vid.read()
                 ret2, debugFrame = vid.read()
-                cmd = calculateCommand(frame, debugFrame)
+                cmd = calculateCommand(frame, debugFrame, False)
                 cv2.imshow('debugFrame', debugFrame)
                 cv2.waitKey(1)
             else:
@@ -87,7 +91,12 @@ def main():
                 if e.winerror == 10053 or e.errno == errno.WSAECONNRESET:
                     print('Connection was abruptly closed')
                     break
-            traceback.print_exc()
+            if isinstance(e, TypeError) and str(e)=="'NoneType' object is not subscriptable":
+                print("no target found")
+                noBalls = True
+
+            # traceback.print_exc()
+
 
     stop_capture(vid)
     client_socket.close()
