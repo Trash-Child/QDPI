@@ -40,9 +40,36 @@ def get_heading_to_ball(ball, robot_pos, robot_heading):
 
     return relative_angle-85
 
+def get_heading_to_goal(goal, robot_pos, robot_heading):
+    if goal or robot_pos is None:
+        return None
+
+    direction_vector = np.array([goal[0] - robot_pos[0], goal[1] - robot_pos[1]])
+    desired_heading = (np.arctan2(direction_vector[1], direction_vector[0]) * 180 / np.pi + 180) % 360
+    relative_angle = (desired_heading - robot_heading + 180) % 360 - 180
+
+    return relative_angle-85 
+
+def setupDelivery(angleToGoal, robot, heading):
+    adjusted_angle_to_goal = (angleToGoal - 90) % 360 # turning -90 to have the right side of the robot face the goal. OBS Might need to be changed to 90
+    if abs(adjusted_angle_to_goal) >= 5:
+        return abs(adjusted_angle_to_goal) # turn
+    else:
+        return 2 # open gate
+    
 
 def calculateCommandToGoal(frame, debugFrame):
     mid_w, mid_e, _, _ = analyseFrame(frame, debugFrame, noBalls)
+    robot, heading = findRobot(frame, debugFrame)
+    if robot is None:
+        return 404
+    angle = get_heading_to_goal(mid_e, robot, heading) # Change is west is big goal
+    dist = calculate_distance(robot, mid_e) # Change if west is big goal
+    if dist < 50:
+        return setupDelivery(angle, robot, heading)
+    elif abs(angle) >= 5:
+        return angle
+
 
 # This function calculates the command based on the given frame.
 # It calls the getImportantInfo function to extract the necessary information.
@@ -59,4 +86,4 @@ def calculateCommand(frame, debugFrame):
     if abs(angle) > 5: # turn if above 5 degrees
         return angle
     else:
-        return 1, calculateDistance(robot, target) # go straight
+        return 1, calculate_distance(robot, target) # go straight

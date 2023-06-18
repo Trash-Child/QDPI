@@ -64,7 +64,6 @@ def getDist(client_socket):
     else:
         return (dist*26/10)-100
 
-
 # Function to handle the data received from the client and execute the corresponding command
 def handle_data(data, client_socket):
     data = int(data)
@@ -96,6 +95,7 @@ def handle_data(data, client_socket):
         motor_v.run(-450)
         wait(200)
         motor_v.run(0)
+        qdpi.turn(360)
         return "Command executed"
 
     print("Data error")

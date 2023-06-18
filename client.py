@@ -1,6 +1,6 @@
 import socket
 import cv2
-from movementLogic import calculateCommand, calculate_distance
+from movementLogic import calculateCommand, calculate_distance, calculateCommandToGoal
 import time
 import errno
 import traceback
@@ -46,6 +46,11 @@ def getManualCommand():
         except Exception as e:
             print("Not an integer")
 
+
+def readFrame(vid):
+    ret, frame = vid.read()
+    ret2, debugFrame = vid.read()
+    return frame, debugFrame
 def main():
     manual = False
     if input("Press 1 for manual, or anything else to continue: ") == '1':
@@ -61,10 +66,14 @@ def main():
     while True:
         try:
             if noBalls:
-            
-            if not manual:
-                ret, frame = vid.read()
-                ret2, debugFrame = vid.read()
+                # TODO: change the main loop
+                frame, debugFrame = readFrame(vid)
+                cmd = calculateCommandToGoal(frame, debugFrame)
+                if cmd == 2:
+                    noBalls = False
+                
+            elif not manual:
+                frame, debugFrame = readFrame(vid)
                 cmd, dist = calculateCommand(frame, debugFrame)
                 cv2.imshow('debugFrame', debugFrame)
                 cv2.waitKey(1)
@@ -78,6 +87,7 @@ def main():
 
                 reply = send_data(client_socket, dist)
                 print('Sent:', cmd)
+
             print('Waiting for command execution...')
             while reply != 'Command executed':
                 reply = client_socket.recv(1024).decode()
