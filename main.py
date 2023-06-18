@@ -50,31 +50,50 @@ def handle_client(client_socket):
         send_reply(client_socket, handle_data(data))
     client_socket.close()
 
-# Function to handle the data received from the client and execute the corresponding command
+# This function handles the data received from the client and executes the corresponding command
 def handle_data(data):
-    data = int(data)
+
+    # Try to convert data to float and round it to the nearest integer.
+    # This is necessary because the client may send a string representation of a float number.
+    try:
+        data = round(float(data))  
+    except ValueError:
+        # If the conversion fails, print an error message and return a string indicating an error.
+        print("Received data could not be converted to integer.")
+        return "Data error"
+
+    # Wait for a second. This is often used to give some time for a device to initialize or settle after 
+    # performing a command. 
     wait(1000)
     
+    # Depending on the value of data, perform different actions.
     if data == 404:
+        # If data equals 404, print an error message and return a string indicating that the command has been executed.
         print("Error 404")
         return "Command executed"
 
     elif data == 1:
+        # If data equals 1, make the robot go straight and return a string indicating that the command has been executed.
         print("going straight")
         qdpi.straight(200)
         return "Command executed"
 
     elif data == -1:
+        # If data equals -1, make the robot reverse and return a string indicating that the command has been executed.
         print("Reversing")
         qdpi.straight(-100)
         return "Command executed"
 
     elif data >= 5 or data <= -5:
+        # If data equals or exceeds 5 or -5, make the robot turn to the specified angle 
+        # and return a string indicating that the command has been executed.
         print("Turning", data)
         qdpi.turn(data)
         return "Command executed"
 
     elif data == 2:
+        # If data equals 2, perform a sequence of motor actions 
+        # and return a string indicating that the command has been executed.
         motor_v.run(450)
         wait(200)
         motor_v.run(0)
@@ -84,8 +103,11 @@ def handle_data(data):
         motor_v.run(0)
         return "Command executed"
 
+    # If data does not match any of the expected values, print an error message and return a string 
+    # indicating that the command has been executed.
     print("Data error")
     return "Command executed"
+
 
 # Function to run the server and handle client connections
 def run_server():

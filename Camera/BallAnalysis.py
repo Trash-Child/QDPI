@@ -106,7 +106,7 @@ def detect_walls(frame, debugFrame, continuous_corners, position_error_margin):
     
     edges = cv2.Canny(gray, 50, 150, apertureSize=3)
 
-    lines = cv2.HoughLinesP(edges, 1, np.pi / 180, 10, minLineLength=100, maxLineGap=10)
+    lines = cv2.HoughLinesP(edges, 1, np.pi / 180, 10, minLineLength=200, maxLineGap=10)
     walls = []
     if lines is not None:
         for line in lines:
@@ -252,14 +252,14 @@ def analyseFrame(frame, debugFrame):
     if most_frequent_ne and most_frequent_se:
         mid_e = ((most_frequent_ne[0] + most_frequent_se[0]) // 2, (most_frequent_ne[1] + most_frequent_se[1]) // 2)
         continuous_midpoints["e"], mid_e = update_continuous_midpoints(mid_e, continuous_midpoints["e"], position_error_margin)
-    print("Most frequent corners:")
-    print("NW:", most_frequent_nw)
-    print("NE:", most_frequent_ne)
-    print("SW:", most_frequent_sw)
-    print("SE:", most_frequent_se)
-    print("Midpoints:")
-    print("West Goal:", mid_w)
-    print("East Goal:", mid_e)
+    #print("Most frequent corners:")
+    #print("NW:", most_frequent_nw)
+    #print("NE:", most_frequent_ne)
+    #print("SW:", most_frequent_sw)
+    #print("SE:", most_frequent_se)
+    #print("Midpoints:")
+    #print("West Goal:", mid_w)
+    #print("East Goal:", mid_e)
 
     return continuous_balls, orange_ball_location
 

@@ -3,6 +3,7 @@ import cv2
 from movementLogic import calculateCommand
 import time
 import errno
+import numpy as np
 
 # Function to start the client and connect to the server
 def start_client(SERVER_IP, SERVER_PORT):
@@ -12,9 +13,9 @@ def start_client(SERVER_IP, SERVER_PORT):
     return client_socket
 
 # Function to send data to the server and receive a reply
+# Function to send data to the server and receive a reply
 def send_data(client_socket, data):
-    if isinstance(data, int):
-        data = str(data)  # Convert integer to string
+    data = str(data)  # Ensure that data is a string
     data = data.encode()  # Convert data to bytes
     total_sent = 0
     while total_sent < len(data):
@@ -24,6 +25,8 @@ def send_data(client_socket, data):
         total_sent += sent
     reply = client_socket.recv(1024).decode()
     return reply
+
+
 
 # Function to start capturing video
 def start_capture():
@@ -36,12 +39,13 @@ def stop_capture(vid):
     cv2.destroyAllWindows()
 
 def main():
+    manual = False
     if input("Press 1 for manual, or anything else to continue: ") == '1':
         manual = True
     else:
         vid = start_capture()
 
-    SERVER_IP = '192.168.43.184'  # EV3's IP address. default: 192.168.43.184
+    SERVER_IP = '172.20.10.4'  # EV3's IP address. default: 192.168.43.184
     SERVER_PORT = 1234  # The same port used by the EV3's server.
     client_socket = start_client(SERVER_IP, SERVER_PORT)
     
@@ -49,11 +53,16 @@ def main():
         try:
             if not manual:
                 ret, frame = vid.read()
-                cmd = calculateCommand(frame)
+                ret2, debugFrame = vid.read()
+                cmd = calculateCommand(frame, debugFrame)
+
+                # Convert numpy float to a regular Python float if necessary
+                if isinstance(cmd, np.floating):
+                    cmd = float(cmd)
             else:
                 cmd = input("Enter command (1 for drive, >5 for turn, 404 for nothing): ")
             
-            reply = send_data(client_socket, cmd)
+            reply = send_data(client_socket, str(cmd))  # Convert cmd to string before sending
             print('Sent:', cmd)
             print('Received:', reply)
             

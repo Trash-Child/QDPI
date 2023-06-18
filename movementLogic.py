@@ -40,32 +40,80 @@ def get_heading_to_ball(ball, robot_pos, robot_heading):
 # If the angle is greater than 5 degrees, it returns the angle.
 # Otherwise, it returns 1.
 def calculateCommand(frame, debugFrame):
-    target, robot, heading = getImportantInfo(frame, debugFrame)
+    try:
+        target, robot, heading = getImportantInfo(frame, debugFrame)
+    except Exception as e:
+        print(f"Error when calling getImportantInfo: {e}")
+        return None
+
     if robot is None:
         return 404
-    
-    angle = get_heading_to_ball(target, robot, heading)
-    if abs(angle) > 5: # turn if above 5 degrees
-        return angle
+
+    try:
+        obstacle_info = getObstacleInfo(frame, debugFrame)
+    except Exception as e:
+        print(f"Error when calling getObstacleInfo: {e}")
+        return None
+
+    if target is None or obstacle_info is None:
+        try:
+            angle = get_heading_to_ball(target, robot, heading)
+        except Exception as e:
+            print(f"Error when calling get_heading_to_ball: {e}")
+            return None
     else:
-        return 1 # go straight
+        try:
+            waypoints = avoidObstacles(frame, debugFrame, robot, target, obstacle_info)
+        except Exception as e:
+            print(f"Error when calling avoidObstacles: {e}")
+            return None
+
+        if not waypoints or not isinstance(waypoints[0], (tuple, list)) or len(waypoints[0]) < 2:
+            print(f"Expected waypoints[0] to be a tuple or a list with at least 2 elements, but got {waypoints[0] if waypoints else '[]'}.")
+            try:
+                angle = get_heading_to_ball(target, robot, heading)
+            except Exception as e:
+                print(f"Error when calling get_heading_to_ball: {e}")
+                return None
+        else:
+            print(type(waypoints[0]), waypoints[0])  # Debug
+            try:
+                angle = get_heading_to_ball(waypoints[0], robot, heading)
+            except Exception as e:
+                print(f"Error when calling get_heading_to_ball: {e}")
+                return None
+
+            if math.hypot(waypoints[0][0] - robot[0], waypoints[0][1] - robot[1]) < 10:  # Threshold distance to waypoint
+                waypoints.pop(0)
+
+    try:
+        if abs(angle) > 5:  # turn if above 5 degrees
+            return angle
+        else:
+            return 1  # go straight
+    except Exception as e:
+        print(f"Error occurred during command decision: {e}")
+        return None
+
 
 
 # This function extracs the 2D vectors of the obstacle lines and stores them for further logic
 # It calls detectX to get the line vectors
 # It returns the line vector array
-def getObstacleInfo(frame)
-# Get line vectors of detected obstacles
-lineVectors = detectX(frame)
-if lineVectors = None:
-    print("getObstacleInfo returning none")
-    return None
-# Return line vector array
-return lineVectors
+def getObstacleInfo(frame, debugFrame):
+    # Get line vectors of detected obstacles
+    lineVectors = detectX(frame, debugFrame)
+    if lineVectors is None:
+        print("getObstacleInfo returning none")
+        return None
+    # Return line vector array
+    return lineVectors
 
 # Function to check if path to ball is intersected by the obstacle
 def lineIntersection(line1, line2):
     # line1 and line2 are 2D vectors with the format ((x1, y1), (x2, y2))
+    
+    print(f"line1: {line1}, line2: {line2}")  # Debug
 
     # Calculate the difference between the x-coordinates and the y-coordinates
     # for each line.
@@ -97,41 +145,41 @@ def lineIntersection(line1, line2):
     return x, y
 
 
-def avoidObstacles(frame, robot, target, line_vectors):
+def avoidObstacles(frame, debugFrame, robot, target, line_vectors):
     # Path is a straight line from robot to target
     path = (robot, target)
     
-    # Loop until a clear path is found
-    while True:
-        # Assume path is clear at the beginning of each iteration
-        path_is_clear = True
-        
-        # Check if path intersects with any obstacle
-        for obstacleLine in line_vectors:
-            intersection_point = lineIntersection(path, obstacleLine)
-            if intersection_point:
-                path_is_clear = False  # Set path_is_clear to False if an obstacle is found
-                
+    waypoints = [robot]  # Start with the robot's initial position
+
+    # Check if path intersects with any obstacle
+    for obstacleLine in line_vectors:
+        print(f"Checking obstacle line: {obstacleLine}")  # Debug
+
+        intersection_point = lineIntersection(path, obstacleLine)
+        print(f"Intersection point: {intersection_point}")  # Debug
+
+        if intersection_point is not None and intersection_point is not False:
+            # Check if intersection_point is a tuple or a list with at least 2 elements.
+            if isinstance(intersection_point, (tuple, list)) and len(intersection_point) >= 2:
                 # Determine the direction of the obstacle relative to the robot
                 if intersection_point[0] < robot[0]:  # Obstacle is to the left
-                    # Move the robot slightly to the right by increasing the x-coordinate
-                    # And keeping the y-coordinate same
-                    robot = (robot[0] + 10, robot[1])
+                    # Create a waypoint to the right of the obstacle
+                    waypoint = (intersection_point[0] + 10, intersection_point[1])
                 else:  # Obstacle is to the right
-                    # Move the robot slightly to the left by decreasing the x-coordinate
-                    # And keeping the y-coordinate same
-                    robot = (robot[0] - 10, robot[1])
+                    # Create a waypoint to the left of the obstacle
+                    waypoint = (intersection_point[0] - 10, intersection_point[1])
                 
-                # Update the robot's path
-                path = (robot, target)
-                break  # Exit the inner for-loop to start checking the new path
-                
-        # If path is clear, exit the loop
-        if path_is_clear:
-            break
+                waypoints.append(waypoint)  # Add the waypoint to the list
+                print(f"New waypoint added: {waypoint}")  # Debug
 
-    # At this point, a clear path should be found, and we can proceed to the target.
-    # The function returns the new robot position so it can be used in other parts of your program.
-    return robot
+                # Update the robot's path to go from the waypoint to the target
+                path = (waypoint, target)
+            else:
+                print(f"Unexpected intersection_point: {intersection_point}")
 
+    # Add the target to the list of waypoints
+    waypoints.append(target)
+    
+    print(f"Final waypoints: {waypoints}")  # Debug
+    return waypoints
 

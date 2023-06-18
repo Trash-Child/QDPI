@@ -3,7 +3,7 @@ import numpy as np
 import math
 
 
-def detectX(frame):
+def detectX(frame, debugFrame):
     # Convert frame to HSV
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
     
@@ -55,10 +55,11 @@ def detectX(frame):
             intercept = y1 - slope*x1  # Calculate intercept
             if not any(abs(slope - m) < slope_threshold and abs(intercept - c) < intercept_threshold for m, c in unique_lines):
                 unique_lines.append((slope, intercept))
-                # Save the line as a 2D vector
-                vector = (x2 - x1, y2 - y1)
-                line_vectors.append(vector)
-                cv2.line(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
+                
+                # Save the line as two points that define the line
+                line_points = ((x1, y1), (x2, y2))  
+                line_vectors.append(line_points)
+                cv2.line(debugFrame, (x1, y1), (x2, y2), (0, 255, 0), 2)
 
     # Returning line vectors
     return line_vectors
