@@ -1,6 +1,7 @@
 # Import necessary libraries and modules
 from Camera.BallAnalysis import analyseFrame, locate_nearest_ball, findRobot
 from Camera.ObstacleAnalysis import detectX
+from client import executeCommand
 import cv2
 import math
 import numpy as np
@@ -39,6 +40,18 @@ def getImportantInfo(frame, debugFrame):
 
     # Return the coordinates of target, robot, and heading
     return target, robot, heading
+
+
+def calculate_distance(frame, debugframe):
+    target_pos, robot_pos, _ = getImportantInfo(frame, debugframe)
+    robot_coords = np.array(robot_pos)
+    target_coords = np.array(target_pos)
+    difference = robot_coords - target_coords
+    # Pythagorean theorem
+    distance = np.sqrt(np.sum(np.square(difference)))
+
+    return distance    
+
 
 # Function to calculate the angle between three points
 def get_heading_to_ball(ball, robot_pos, robot_heading):
@@ -87,10 +100,24 @@ def calculateCommand(frame, debugFrame):
         print("Skipping iteration due to missing obstacle information.")
         return None
 
-    # If there are no waypoints, calculate them
+    # If there are no waypoints, go to ball
     if not waypoints:
         try:
-            waypoints = avoidObstacles(frame, debugFrame, robot, target, obstacle_info, robot_heading)
+            waypoints = avoidObstacles(frame, debugFrame, robot, target, line_vectors, heading)
+            if waypoints is None:
+                target, robot, heading = getImportantInfo(frame, debugFrame)
+                if robot is None:
+                    return 404
+                
+                angle = get_heading_to_ball(target, robot, heading)
+                if abs(angle) > 5: # turn if above 5 degrees
+                    return angle
+                else:
+                    return 1 # go straight
+            else:
+            # Continue with waypoints
+            pass  # Your current logic for handling waypoints
+
         except Exception as e:
             print(f"Error when calling avoidObstacles: {e}")
             return None
@@ -156,7 +183,7 @@ def lineIntersection(line1, line2):
     # Return the intersection point
     return x, y
 
-def avoidObstacles(frame, debugFrame, robot, target, line_vectors, heading):
+def avoidObstacles(frame, debugFrame, robot, target, line_vectors, heading, client_socket):
     # The path from the robot to the target is initially a straight line
     path = (robot, target)
 
@@ -169,58 +196,64 @@ def avoidObstacles(frame, debugFrame, robot, target, line_vectors, heading):
 
         # If there is an intersection point, we need to adjust our path
         if intersection_point is not None and intersection_point is not False:
-            # Determine the direction of the obstacle relative to the robot
+        # Determine the direction of the obstacle relative to the robot
             if intersection_point[0] < robot[0]:  # Obstacle is to the left
                 # Turn towards top of frame
-                waypoint = (robot[0], 0)
-                waypoint_heading = 90  # facing upward
-
-                waypoints.append((waypoint, waypoint_heading))  # append the waypoint and heading
+                # Execute the turn command
+                turn_command = 90
+                executeCommand(client_socket, turn_command)
 
                 # Move forward to avoid obstacle
-                waypoint = (robot[0], 0 - 20)  # move forward by 20 units
-                waypoint_heading = 90  # still facing upward
-                
-                waypoints.append((waypoint, waypoint_heading))  # append the waypoint and heading
-                
+                move_command = 1
+                executeCommand(client_socket, move_command)
+
                 # Turn right
-                waypoint_heading = 0  # facing right
-                waypoints.append((waypoint, waypoint_heading))  # append the waypoint and heading
+                turn_command = 90
+                executeCommand(client_socket, turn_command)
+
+                # Move forward to complete the half square path
+                move_command = 1
+                executeCommand(client_socket, move_command)
+
+                # Turn downwards to go towards the ball
+                turn_command = 90
+                executeCommand(client_socket, turn_command)
 
                 # Move forward to go around the obstacle
-                waypoint = (waypoint[0] + 20, waypoint[1])  # move right by 20 units
-                
-                waypoints.append((waypoint, waypoint_heading))  # append the waypoint and heading
+                move_command = 1
+                executeCommand(client_socket, move_command)
 
             else:  # Obstacle is to the right
                 # Turn towards top of frame
-                waypoint = (robot[0], 0)
-                waypoint_heading = 90  # facing upward
-
-                waypoints.append((waypoint, waypoint_heading))  # append the waypoint and heading
+                
 
                 # Move forward to avoid obstacle
-                waypoint = (robot[0], 0 - 20)  # move forward by 20 units
-                waypoint_heading = 90  # still facing upward
                 
-                waypoints.append((waypoint, waypoint_heading))  # append the waypoint and heading
-                
+
                 # Turn left
-                waypoint_heading = 180  # facing left
-                waypoints.append((waypoint, waypoint_heading))  # append the waypoint and heading
+                
+
+                # Move forward to complete the half square path
+                
+
+                # Turn downwards to go towards the ball
+                
 
                 # Move forward to go around the obstacle
-                waypoint = (waypoint[0] - 20, waypoint[1])  # move left by 20 units
                 
-                waypoints.append((waypoint, waypoint_heading))  # append the waypoint and heading
 
             # After avoiding the obstacle, robot should head towards the target
             path = (waypoint, target)
             heading = get_heading_to_ball(target, robot, waypoint_heading)
+
+    # If there were no intersection points, return None or empty list
+    if len(waypoints) == 1:
+        return None
 
     # Add the target to the list of waypoints
     target_heading = get_heading_to_ball(target, robot, heading)
     waypoints.append((target, target_heading))
 
     return waypoints
+
 

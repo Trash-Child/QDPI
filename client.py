@@ -31,6 +31,21 @@ def send_data(client_socket, data):
     reply = client_socket.recv(1024).decode()
     return reply  # Returning the reply as a string
 
+# Function to call commands
+def executeCommand(client_socket, cmd):
+    reply = send_data(client_socket, str(cmd))
+    print('Sent:', cmd)
+    print('Received:', reply)
+
+    # Wait for the server to execute the command
+    if reply != 'Command executed':
+        print('Waiting for command execution...')
+        while True:
+            reply = client_socket.recv(1024).decode()
+            if reply == 'Command executed':
+                break
+
+
 # Function to start capturing video from the default camera (camera index 0)
 def start_capture():
     vid = cv2.VideoCapture(0)
