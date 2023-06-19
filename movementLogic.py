@@ -66,6 +66,7 @@ def calculateCommand(frame, debugFrame):
 
     try:
         target, robot, robot_heading = getImportantInfo(frame, debugFrame)
+        print(robot, robot_heading)
     except Exception as e:
         print(f"Error when calling getImportantInfo: {e}")
         return None
