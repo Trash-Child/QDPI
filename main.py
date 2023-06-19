@@ -50,7 +50,7 @@ def handle_client(client_socket):
         send_reply(client_socket, handle_data(data, client_socket))
     client_socket.close()
 
-
+# Get distance from robot center to target, to know how far to travel forward
 def getDist(client_socket):
     print("Waiting for dist...")
     dist = client_socket.recv(1024)
