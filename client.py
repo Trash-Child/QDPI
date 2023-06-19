@@ -69,7 +69,7 @@ def main():
         try:
             if noBalls:
                 frame, debugFrame = readFrame(vid)
-                cmd = calculateCommandToGoal(frame, debugFrame)
+                cmd, dist = calculateCommandToGoal(frame, debugFrame)
                 if cmd == 2:
                     noBalls = False
                 

@@ -12,6 +12,7 @@ def getImportantInfo(frame, debugFrame):
     robot, heading = findRobot(frame, debugFrame)
     target = locate_nearest_ball(white_balls, orange, robot)
     # Extract the coordinates of the target ball, robot ball, and green ball.
+    target = target[0][:2]
     try:
         target = int(target[0]), int(target[1])
     except Exception as e:
@@ -20,8 +21,7 @@ def getImportantInfo(frame, debugFrame):
     return target, robot, heading
 
 def calculate_distance(robot, target):
-    target = target[0][:2]
-    difference = robot - target
+    difference = (robot[0] - target[0], robot[1] - target[1])
     # Pythagorean theorem
     distance = np.sqrt(np.sum(np.square(difference)))
 
