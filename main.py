@@ -60,7 +60,7 @@ def handle_data(data):
     except ValueError:
         # If the conversion fails, print an error message and return a string indicating an error.
         print("Received data could not be converted to integer.")
-        return "Data error"
+        return "Recieved data error"
 
     # Wait for a second. This is often used to give some time for a device to initialize or settle after 
     # performing a command. 
