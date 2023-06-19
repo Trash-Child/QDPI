@@ -9,18 +9,35 @@ import numpy as np
 # It then finds the nearest white ball and the nearest robot ball.
 # If any of the required information is missing, it returns None.
 def getImportantInfo(frame, debugFrame):
-    white_balls, orange = analyseFrame(frame, debugFrame)
-    robot, heading = findRobot(frame, debugFrame)
-    target = locate_nearest_ball(white_balls, orange, robot)
+    try:
+        white_balls, orange = analyseFrame(frame, debugFrame)
+        robot, heading = findRobot(frame, debugFrame)
+        target = locate_nearest_ball(white_balls, orange, robot)
+    except Exception as e:
+        print(f"Error occurred while analysing frame: {e}")
+        return None, None, None
 
     # Extract the coordinates of the target ball, robot ball, and green ball.
-    target = target[0][:2]
-    try:
-        target = int(target[0]), int(target[1])
-    except Exception as e:
-        print("No target")
-    robot = int(robot[0]), int(robot[1])
-    return target, robot, heading   
+    if target is not None:
+        try:
+            target = target[0][:2]
+            target = int(target[0]), int(target[1])
+        except Exception as e:
+            print(f"Error occurred while processing target: {e}")
+            target = None
+    else:
+        print("No target found.")
+        target = None
+
+    if robot is not None:
+        try:
+            robot = int(robot[0]), int(robot[1])
+        except Exception as e:
+            print(f"Error occurred while processing robot: {e}")
+            robot = None
+
+    return target, robot, heading
+
 
 # This function calculates the angle between three points.
 def get_heading_to_ball(ball, robot_pos, robot_heading):
@@ -39,15 +56,24 @@ def get_heading_to_ball(ball, robot_pos, robot_heading):
 # Otherwise, it calculates the angle between the green ball, robot ball, and target ball.
 # If the angle is greater than 5 degrees, it returns the angle.
 # Otherwise, it returns 1.
+
+waypoints = []  # Global variable to hold the waypoints
+turn_completed = False
+threshold_distance = 10  # Distance at which we consider the waypoint has been reached
+
 def calculateCommand(frame, debugFrame):
+    global waypoints  # Declare waypoints as a global variable
+
     try:
-        target, robot, heading = getImportantInfo(frame, debugFrame)
+        target, robot, robot_heading = getImportantInfo(frame, debugFrame)
     except Exception as e:
         print(f"Error when calling getImportantInfo: {e}")
         return None
 
-    if robot is None:
-        return 404
+    # Check if robot or target or robot_heading is None, if so, skip to the next iteration
+    if robot is None or target is None or robot_heading is None:
+        print("Skipping iteration due to missing data.")
+        return None
 
     try:
         obstacle_info = getObstacleInfo(frame, debugFrame)
@@ -55,45 +81,38 @@ def calculateCommand(frame, debugFrame):
         print(f"Error when calling getObstacleInfo: {e}")
         return None
 
-    if target is None or obstacle_info is None:
+    # Check if obstacle_info is None, if so, skip to the next iteration
+    if obstacle_info is None:
+        print("Skipping iteration due to missing obstacle information.")
+        return None
+
+    if not waypoints:
         try:
-            angle = get_heading_to_ball(target, robot, heading)
-        except Exception as e:
-            print(f"Error when calling get_heading_to_ball: {e}")
-            return None
-    else:
-        try:
-            waypoints = avoidObstacles(frame, debugFrame, robot, target, obstacle_info)
+            waypoints = avoidObstacles(frame, debugFrame, robot, target, obstacle_info, robot_heading)
         except Exception as e:
             print(f"Error when calling avoidObstacles: {e}")
             return None
 
-        if not waypoints or not isinstance(waypoints[0], (tuple, list)) or len(waypoints[0]) < 2:
-            print(f"Expected waypoints[0] to be a tuple or a list with at least 2 elements, but got {waypoints[0] if waypoints else '[]'}.")
-            try:
-                angle = get_heading_to_ball(target, robot, heading)
-            except Exception as e:
-                print(f"Error when calling get_heading_to_ball: {e}")
-                return None
-        else:
-            print(type(waypoints[0]), waypoints[0])  # Debug
-            try:
-                angle = get_heading_to_ball(waypoints[0], robot, heading)
-            except Exception as e:
-                print(f"Error when calling get_heading_to_ball: {e}")
-                return None
+    waypoint, waypoint_heading = waypoints[0]
+    try:
+        angle = get_heading_to_ball(waypoint, robot, robot_heading)
+    except Exception as e:
+        print(f"Error when calculating turning angle: {e}")
+        return None
 
-            if math.hypot(waypoints[0][0] - robot[0], waypoints[0][1] - robot[1]) < 10:  # Threshold distance to waypoint
-                waypoints.pop(0)
+    if math.hypot(waypoint[0] - robot[0], waypoint[1] - robot[1]) < 10:  # If close enough to waypoint
+        if abs(angle) <= 1:  # And if within the threshold angle
+            waypoints.pop(0)  # Remove this waypoint from the list
 
     try:
-        if abs(angle) > 5:  # turn if above 5 degrees
-            return angle
+        if abs(angle) > 5:  # Turn if the absolute angle is above 5 degrees
+            return angle  # Turn towards waypoint/target
         else:
-            return 1  # go straight
+            return 1  # Go straight
     except Exception as e:
         print(f"Error occurred during command decision: {e}")
         return None
+
 
 
 
@@ -145,11 +164,11 @@ def lineIntersection(line1, line2):
     return x, y
 
 
-def avoidObstacles(frame, debugFrame, robot, target, line_vectors):
+def avoidObstacles(frame, debugFrame, robot, target, line_vectors, heading):
     # Path is a straight line from robot to target
     path = (robot, target)
     
-    waypoints = [robot]  # Start with the robot's initial position
+    waypoints = [(robot, heading)]  # Start with the robot's initial position and its current heading
 
     # Check if path intersects with any obstacle
     for obstacleLine in line_vectors:
@@ -169,7 +188,10 @@ def avoidObstacles(frame, debugFrame, robot, target, line_vectors):
                     # Create a waypoint to the left of the obstacle
                     waypoint = (intersection_point[0] - 10, intersection_point[1])
                 
-                waypoints.append(waypoint)  # Add the waypoint to the list
+                # Calculate heading to waypoint
+                waypoint_heading = get_heading_to_ball(waypoint, robot, heading)
+                
+                waypoints.append((waypoint, waypoint_heading))  # Add the waypoint to the list along with its associated heading
                 print(f"New waypoint added: {waypoint}")  # Debug
 
                 # Update the robot's path to go from the waypoint to the target
@@ -178,8 +200,11 @@ def avoidObstacles(frame, debugFrame, robot, target, line_vectors):
                 print(f"Unexpected intersection_point: {intersection_point}")
 
     # Add the target to the list of waypoints
-    waypoints.append(target)
+    # Calculate heading to target
+    target_heading = get_heading_to_ball(target, waypoints[-1][0], heading)
+    waypoints.append((target, target_heading))
     
     print(f"Final waypoints: {waypoints}")  # Debug
     return waypoints
+
 
