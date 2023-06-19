@@ -21,12 +21,13 @@ def getImportantInfo(frame, debugFrame):
     return target, robot, heading
 
 def calculate_distance(robot, target):
-    difference = np.array(robot) - np.array(target)
+    robot = robot[0][:2]
+    target = target[0][:2]
+    difference = robot - target
     # Pythagorean theorem
     distance = np.sqrt(np.sum(np.square(difference)))
 
     return distance
-
 
 # This function calculates the angle between three points.
 def get_heading_to_ball(ball, robot_pos, robot_heading):
