@@ -167,7 +167,7 @@ def lineIntersection(line1, line2):
 def avoidObstacles(frame, debugFrame, robot, target, line_vectors, heading):
     # Path is a straight line from robot to target
     path = (robot, target)
-    
+
     waypoints = [(robot, heading)]  # Start with the robot's initial position and its current heading
 
     # Check if path intersects with any obstacle
@@ -183,28 +183,30 @@ def avoidObstacles(frame, debugFrame, robot, target, line_vectors, heading):
                 # Determine the direction of the obstacle relative to the robot
                 if intersection_point[0] < robot[0]:  # Obstacle is to the left
                     # Create a waypoint to the right of the obstacle
-                    waypoint = (intersection_point[0] + 10, intersection_point[1])
+                    waypoint = (intersection_point[0] + 20, intersection_point[1] + 50)
                 else:  # Obstacle is to the right
                     # Create a waypoint to the left of the obstacle
-                    waypoint = (intersection_point[0] - 10, intersection_point[1])
-                
+                    waypoint = (intersection_point[0] - 20, intersection_point[1] - 50)
+
                 # Calculate heading to waypoint
                 waypoint_heading = get_heading_to_ball(waypoint, robot, heading)
-                
+
                 waypoints.append((waypoint, waypoint_heading))  # Add the waypoint to the list along with its associated heading
                 print(f"New waypoint added: {waypoint}")  # Debug
 
                 # Update the robot's path to go from the waypoint to the target
                 path = (waypoint, target)
+                heading = waypoint_heading  # Update heading
             else:
                 print(f"Unexpected intersection_point: {intersection_point}")
 
     # Add the target to the list of waypoints
     # Calculate heading to target
-    target_heading = get_heading_to_ball(target, waypoints[-1][0], heading)
+    target_heading = get_heading_to_ball(target, robot, heading)
     waypoints.append((target, target_heading))
-    
+
     print(f"Final waypoints: {waypoints}")  # Debug
     return waypoints
+
 
 
