@@ -63,6 +63,7 @@ def main():
                 ret, frame = vid.read()
                 ret2, debugFrame = vid.read()
                 cmd = calculateCommand(frame, debugFrame)
+                cv2.imshow('debugFrame', debugFrame)
 
                 # Convert numpy float to a regular Python float if necessary
                 if isinstance(cmd, np.floating):

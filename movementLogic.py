@@ -171,24 +171,56 @@ def avoidObstacles(frame, debugFrame, robot, target, line_vectors, heading):
         if intersection_point is not None and intersection_point is not False:
             # Determine the direction of the obstacle relative to the robot
             if intersection_point[0] < robot[0]:  # Obstacle is to the left
-                # Create a waypoint to the right of the obstacle
-                waypoint = (intersection_point[0] + 20, intersection_point[1] + 50)
+                # Turn towards top of frame
+                waypoint = (robot[0], 0)
+                waypoint_heading = 90  # facing upward
+
+                waypoints.append((waypoint, waypoint_heading))  # append the waypoint and heading
+
+                # Move forward to avoid obstacle
+                waypoint = (robot[0], 0 - 20)  # move forward by 20 units
+                waypoint_heading = 90  # still facing upward
+                
+                waypoints.append((waypoint, waypoint_heading))  # append the waypoint and heading
+                
+                # Turn right
+                waypoint_heading = 0  # facing right
+                waypoints.append((waypoint, waypoint_heading))  # append the waypoint and heading
+
+                # Move forward to go around the obstacle
+                waypoint = (waypoint[0] + 20, waypoint[1])  # move right by 20 units
+                
+                waypoints.append((waypoint, waypoint_heading))  # append the waypoint and heading
+
             else:  # Obstacle is to the right
-                # Create a waypoint to the left of the obstacle
-                waypoint = (intersection_point[0] - 20, intersection_point[1] - 50)
+                # Turn towards top of frame
+                waypoint = (robot[0], 0)
+                waypoint_heading = 90  # facing upward
 
-            # Calculate heading to waypoint
-            waypoint_heading = get_heading_to_ball(waypoint, robot, heading)
+                waypoints.append((waypoint, waypoint_heading))  # append the waypoint and heading
 
-            # Add the waypoint to the list along with its associated heading
-            waypoints.append((waypoint, waypoint_heading))
+                # Move forward to avoid obstacle
+                waypoint = (robot[0], 0 - 20)  # move forward by 20 units
+                waypoint_heading = 90  # still facing upward
+                
+                waypoints.append((waypoint, waypoint_heading))  # append the waypoint and heading
+                
+                # Turn left
+                waypoint_heading = 180  # facing left
+                waypoints.append((waypoint, waypoint_heading))  # append the waypoint and heading
 
-            # Update the robot's path to go from the waypoint to the target
+                # Move forward to go around the obstacle
+                waypoint = (waypoint[0] - 20, waypoint[1])  # move left by 20 units
+                
+                waypoints.append((waypoint, waypoint_heading))  # append the waypoint and heading
+
+            # After avoiding the obstacle, robot should head towards the target
             path = (waypoint, target)
-            heading = waypoint_heading  # Update heading
+            heading = get_heading_to_ball(target, robot, waypoint_heading)
 
     # Add the target to the list of waypoints
     target_heading = get_heading_to_ball(target, robot, heading)
     waypoints.append((target, target_heading))
 
     return waypoints
+
