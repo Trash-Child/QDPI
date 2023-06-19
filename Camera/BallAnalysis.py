@@ -201,11 +201,8 @@ def findRobot(frame, debugFrame):
     return np.array([cx, cy]), heading
 
 
-# def goToGoal(mid_w, mid_w, robot):
-
-
 # Function to analyze the frame and locate balls
-def analyseFrame(frame, debugFrame, noBalls):
+def analyseFrame(frame, debugFrame):
     continuous_corners = {
         "nw": [], 
         "ne": [], 

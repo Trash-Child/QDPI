@@ -51,6 +51,8 @@ def readFrame(vid):
     ret, frame = vid.read()
     ret2, debugFrame = vid.read()
     return frame, debugFrame
+
+
 def main():
     manual = False
     if input("Press 1 for manual, or anything else to continue: ") == '1':
@@ -58,7 +60,7 @@ def main():
     else:
         vid = cv2.VideoCapture(0)
 
-    SERVER_IP = '192.168.43.81'  # EV3's IP address. default: 192.168.43.184
+    SERVER_IP = '192.168.43.184'  # EV3's IP address. default: 192.168.43.184
     SERVER_PORT = 1234  # The same port used by the EV3's server.
     client_socket = start_client(SERVER_IP, SERVER_PORT)
     cmd = ""
@@ -66,7 +68,6 @@ def main():
     while True:
         try:
             if noBalls:
-                # TODO: change the main loop
                 frame, debugFrame = readFrame(vid)
                 cmd = calculateCommandToGoal(frame, debugFrame)
                 if cmd == 2:
@@ -77,6 +78,7 @@ def main():
                 cmd, dist = calculateCommand(frame, debugFrame)
                 cv2.imshow('debugFrame', debugFrame)
                 cv2.waitKey(1)
+
             else:
                 cmd = getManualCommand()
             reply = send_data(client_socket, cmd)
@@ -102,8 +104,8 @@ def main():
             if isinstance(e, TypeError) and str(e)=="'NoneType' object is not subscriptable":
                 print("no target found")
                 noBalls = True
-
-            # traceback.print_exc()
+            else:
+                traceback.print_exc()
 
 
     stop_capture(vid)

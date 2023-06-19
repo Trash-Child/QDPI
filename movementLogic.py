@@ -12,7 +12,6 @@ def getImportantInfo(frame, debugFrame):
     robot, heading = findRobot(frame, debugFrame)
     target = locate_nearest_ball(white_balls, orange, robot)
     # Extract the coordinates of the target ball, robot ball, and green ball.
-    target = target[0][:2]
     try:
         target = int(target[0]), int(target[1])
     except Exception as e:
@@ -21,7 +20,6 @@ def getImportantInfo(frame, debugFrame):
     return target, robot, heading
 
 def calculate_distance(robot, target):
-    robot = robot[0][:2]
     target = target[0][:2]
     difference = robot - target
     # Pythagorean theorem
@@ -69,6 +67,8 @@ def calculateCommandToGoal(frame, debugFrame):
         return setupDelivery(angle, robot, heading)
     elif abs(angle) >= 5:
         return angle
+    else:
+        return 1, dist
 
 
 # This function calculates the command based on the given frame.
@@ -84,6 +84,6 @@ def calculateCommand(frame, debugFrame):
     
     angle = get_heading_to_ball(target, robot, heading)
     if abs(angle) > 5: # turn if above 5 degrees
-        return angle
+        return angle, None
     else:
         return 1, calculate_distance(robot, target) # go straight
