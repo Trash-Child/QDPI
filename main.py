@@ -83,6 +83,10 @@ def handle_data(data, client_socket):
         qdpi.straight(-100)
         return "Command executed"
 
+    elif data == 3:
+        qdpi.straight(manualDistance)
+        return "Command executed_straight set distance"
+
     elif data >= 5 or data <= -5:
         if data > 180:
             data = data - 360
