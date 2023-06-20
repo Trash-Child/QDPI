@@ -1,5 +1,6 @@
 from Camera.BallAnalysis import analyseFrame, locate_nearest_ball, findRobot
 import cv2
+from Camera.detectx import detectX
 import math
 import numpy as np
 
