@@ -1,4 +1,4 @@
-from Camera.BallAnalysis import analyseFrame, locate_nearest_ball, findRobot
+from Camera.BallAnalysis import analyseFrame, locate_nearest_ball, findRobot, getCorners
 from ObstacleAnalysis import detectX
 import cv2
 import math
@@ -220,10 +220,15 @@ def getSafe(side):
 	else: 
 		print("error in getSafe!\n")
 
-def avoidObstacle(course_limits):
+def avoidObstacle(NW, SE):
 	x_limits, running_avg, lineVectors = detectX(frame, debugFrame, running_avg, alpha=0.2) #lineVectors is not used in this
 	robotXY, robotHeading = findRobot(frame, debugFrame)
 	side, safe = getRobotSide(x_limits) #safe is int (0,1 are valid values)
+	course_limits = [0,0,0,0]
+	course_limits[0] = NW[0]
+	course_limits[1] = SE[0]
+	course_limits[2] = NW[1]
+	course_limits[3] = SE[1]
 	if safe == 2:
 		print("Error with safe in avoidObstacle")
 	else:
@@ -237,7 +242,7 @@ def avoidObstacle(course_limits):
 			return relative_angle
 		else:
 			manualDistance = robotXY[1]-(course_limits[2]+safetydistance) #drive north
-			return 3, manualDistance
+			return 1
 	
 	elif side == 'n':
 		if robotHeading < 175 or robotheading > 185: # Heading is not west
@@ -246,7 +251,7 @@ def avoidObstacle(course_limits):
 			return relative_angle
 		else:
 			manualDistance = robotXY[0]-(course_limits[0]+safetydistance) #drive west
-			return 3, manualDistance
+			return 1
 	
 	elif side == 'w':
 		if robotHeading < 265 or robotHeading > 275: # heading is not south
@@ -255,7 +260,7 @@ def avoidObstacle(course_limits):
 			return relative_angle
 		else:
 			manualDistance = (course_limits[3]-safetydistance)-robotXY[1] #drive south
-			return 3, manualDistance
+			return 1
 	
 	elif side == 's':
 		if robotHeading > 5 and robotHeading < 355: # heading is not east
@@ -264,7 +269,7 @@ def avoidObstacle(course_limits):
 			return relative_angle
 		else:
 			manualDistance = (course_limits[1]-safetydistance)-robotXY[0] #drive east
-			return 3, manualDistance
+			return 1
 	
 	else:
 		print("error with side in avoidObstacle!\n")

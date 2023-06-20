@@ -270,6 +270,15 @@ def analyseFrame(frame, debugFrame):
         
     return mid_w, mid_e, continuous_balls, orange_ball_location
 
+def getCorners(frame, debugFrame, continuous_corners, position_error_margin):
+    continuous_corners = {
+        "nw": [], 
+        "ne": [], 
+        "sw": [], 
+        "se": []
+    }
+    _, _, _, NW, _, SE, _ = detect_walls(frame, debugFrame, continuous_corners, 25)
+    return NW, SE
 
 def locate_nearest_ball(continuous_balls, orange_ball_location, robot):
     global closest_ball
