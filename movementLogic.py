@@ -58,3 +58,14 @@ def calculateCommand(frame, debugFrame):
         return angle
     else:
         return 1 # go straight
+
+
+# Function to extract obstacle information from the frame
+def getObstacleInfo(frame, debugFrame):
+    # Get line vectors of detected obstacles
+    lineVectors = detectX(frame, debugFrame)
+    if lineVectors is None:
+        print("getObstacleInfo returning none")
+        return None
+    # Return line vector array
+    return lineVectors
