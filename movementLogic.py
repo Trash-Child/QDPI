@@ -16,6 +16,7 @@ def getImportantInfo(frame, debugFrame):
     _, _, white_balls, orange = analyseFrame(frame, debugFrame)
     robot, heading = findRobot(frame, debugFrame)
     target = locate_nearest_ball(white_balls, orange, robot)
+    x_limits, running_avg, lineVectors = detectX(frame, debugFrame, running_avg, alpha=0.2)
 
     # Extract the coordinates of the target ball, robot ball, and green ball.
     target = target[0][:2]
@@ -24,7 +25,7 @@ def getImportantInfo(frame, debugFrame):
     except Exception as e:
         print("No target")
     robot = int(robot[0]), int(robot[1])
-    return target, robot, heading
+    return target, robot, heading, x_limits, lineVectors
 
 def distanceToBall(frame, debugframe):
     target_pos, robot_pos, _ = getImportantInfo(frame, debugframe)
@@ -95,15 +96,18 @@ def calculateCommandToGoal(frame, debugFrame, isHeadedStraight):
 # If the angle is greater than 5 degrees, it returns the angle.
 # Otherwise, it returns 1.
 def calculateCommand(frame, debugFrame):
-    target, robot, heading = getImportantInfo(frame, debugFrame)
+    target, robot, heading, x_limits, lineVectors = getImportantInfo(frame, debugFrame)
     if robot is None:
         return 404
-    
-    angle = get_desired_heading(target, robot, heading)
-    if abs(angle) > 5 and angle < 355: # turn if above 5 degrees
-        return angle
+    intersection = intersectionLogic(robot, target, line_vectors, course_limits)
+    if not intersection:
+        angle = get_desired_heading(target, robot, heading)
+        if abs(angle) > 5 and angle < 355: # turn if above 5 degrees
+            return angle
+        else:
+            return 1 # go straight
     else:
-        return 1 # go straight
+        avoidObstacle(x_limits, course_limits)
 
 # Function to check if two lines intersect
 def lineIntersection(line1, line2):
@@ -140,8 +144,8 @@ def intersectionLogic(robot, target, line_vectors, course_limits):
 
         # If there is an intersection point, we need to adjust our path
         if intersection_point is not None and intersection_point is not False:
-            avoidObstacle(course_limits)
-    return #return statement here
+            return True
+    return False
 
  
 # Begin:    Dictes avoidObstacle
@@ -218,8 +222,7 @@ def getSafe(side):
 	else: 
 		print("error in getSafe!\n")
 
-def avoidObstacle(course_limits):
-	x_limits, running_avg, lineVectors = detectX(frame, debugFrame, running_avg, alpha=0.2) #lineVectors is not used in this
+def avoidObstacle(x_limits, course_limits):
 	robotXY, robotHeading = findRobot(frame, debugFrame)
 	side, safe = getRobotSide(x_limits) #safe is int (0,1 are valid values)
 	if safe == 2:
