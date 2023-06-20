@@ -99,3 +99,45 @@ def calculateCommand(frame, debugFrame):
         return angle
     else:
         return 1 # go straight
+
+# Function to check if path to ball is intersected by the obstacle
+def lineIntersection(line1, line2):
+    # Line1 and line2 are 2D vectors with the format ((x1, y1), (x2, y2))
+
+    # Calculate the difference in x and y coordinates for each line
+    xdiff = (line1[0][0] - line1[1][0], line2[0][0] - line2[1][0])
+    ydiff = (line1[0][1] - line1[1][1], line2[0][1] - line2[1][1])
+
+    # Calculate the determinant of xdiff and ydiff to check if lines are parallel
+    def det(a, b):
+        return a[0] * b[1] - a[1] * b[0]
+
+    div = det(xdiff, ydiff)
+    if div == 0:
+       return False
+
+    # Calculate x and y coordinates of the intersection point
+    d = (det(*line1), det(*line2))
+    x = det(d, xdiff) / div
+    y = det(d, ydiff) / div
+
+    # Return the intersection point
+    return x, y  
+
+def avoidObstacles(frame, debugFrame, robot, target, line_vectors, heading):
+    # The path from the robot to the target is initially a straight line
+    path = (robot, target)
+
+    global intersections  # Declare intersections as global
+
+    # Check if the path intersects with any of the obstacles
+    for obstacleLine in line_vectors:
+        intersection_point = lineIntersection(path, obstacleLine)
+
+        # If there is an intersection point, we need to adjust our path
+        if intersection_point is not None and intersection_point is not False:
+            intersections = True
+            #Avoid Logic here
+    return #return statement here
+
+
