@@ -94,4 +94,4 @@ def detectX(frame, debugFrame, running_avg=None, alpha=0.2):
     for line in lines_out:
         cv2.line(debugFrame, line[0], line[1], (0, 255, 0), 2)
 
-    return lines_out, running_avg
+    return lines_out, line_vectors, running_avg
