@@ -107,7 +107,7 @@ def calculateCommand(frame, debugFrame):
         else:
             return 1 # go straight
     else:
-        avoidObstacle(x_limits, course_limits)
+        avoidObstacle(x_limits)
 
 # Function to check if two lines intersect
 def lineIntersection(line1, line2):
