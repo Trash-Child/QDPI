@@ -1,10 +1,8 @@
-#from movementLogic import calculateCommand, getDistance, distanceToBall, calculateCommandToGoal 	#TODO import, outcmtd for test
-#from BallAnalysis import findRobot																	#TODO import, outcmtd for test
+from movementLogic import calculateCommand, getDistance, distanceToBall, calculateCommandToGoal 
+from BallAnalysis import findRobot																
 
 # Define constants
 safetydistance = 50
-
-x_limits = [53,54,55,56] #TODO delete, is a test
 
 
 side, safe = getRobotSide(x_limits)
@@ -19,8 +17,7 @@ print("avoidObstacle Says:")
 
 
 def getRobotSide(x_limits): # x_limits is list [lo_x, hi_x, lo_y, hi_y]. Returns side as char (w,e,n,s) and safe as bool (0,1)
-	#robotXY, robotHeading = findRobot(frame, debugFrame) #TODO outcmtd for test
-	robotXY = [53,200] #TODO delete, is a test
+	robotXY, robotHeading = findRobot(frame, debugFrame) 
 	
 	side = 'x'
 	safe = 2
@@ -64,8 +61,7 @@ def getRobotSide(x_limits): # x_limits is list [lo_x, hi_x, lo_y, hi_y]. Returns
 	return side, safe
 
 def getSafe(side):
-	#robotXY, robotHeading = findRobot(frame, debugFrame) #TODO outcmtd for test
-	robotHeading = 100 #TODO delete, is a test
+	robotXY, robotHeading = findRobot(frame, debugFrame) 
 	if side == 'w':
 		if robotHeading < 90 or robotHeading > 270: #facing X
 			return -1 	# reverse 100
