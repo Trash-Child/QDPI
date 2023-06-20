@@ -105,7 +105,7 @@ def calculateCommand(frame, debugFrame):
     else:
         return 1 # go straight
 
-# Function to check if path to ball is intersected by the obstacle
+# Function to check if two lines intersect
 def lineIntersection(line1, line2):
     # Line1 and line2 are 2D vectors with the format ((x1, y1), (x2, y2))
 
@@ -129,11 +129,10 @@ def lineIntersection(line1, line2):
     # Return the intersection point
     return x, y  
 
-def avoidObstacles(robot, target, line_vectors, course_limits):
+# Function to check if path to bal intersects with any obstacle lines and call avoidObstacle if intersection
+def intersectionLogic(robot, target, line_vectors, course_limits):
     # The path from the robot to the target is initially a straight line
     path = (robot, target)
-
-    global intersections  # Declare intersections as global
 
     # Check if the path intersects with any of the obstacles
     for obstacleLine in line_vectors:
@@ -141,7 +140,6 @@ def avoidObstacles(robot, target, line_vectors, course_limits):
 
         # If there is an intersection point, we need to adjust our path
         if intersection_point is not None and intersection_point is not False:
-            intersections = True
             avoidObstacle(course_limits)
     return #return statement here
 
