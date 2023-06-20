@@ -40,17 +40,14 @@ def get_desired_heading(target, robot_pos, robot_heading):
 
     direction_vector = np.array([target[0] - robot_pos[0], target[1] - robot_pos[1]])
     desired_heading = (np.arctan2(direction_vector[1], direction_vector[0]) * 180 / np.pi +180) % 360
-    relative_angle = (desired_heading - robot_heading + 180) % 360 - 180
-        if relative_angle-85 > 180:
-             new_angle = (relative_angle+180)%360 #calculates what it should be! 
-            
-    return new_angle #it used to be the relative angle 
+    relative_angle = (desired_heading - robot_heading - 90) % 360
+    return relative_angle #it used to be the relative angle 
 
 
 def setupDelivery(robot, heading):
-    angleToNorth = (180 - heading) % 360 # 90 = north. Might need to be changed in case of diff number
-    if abs(angleToNorth) >= 5:
-        return angleToNorth # turn
+    angleToSouth = - (270 - heading) % 360 # 90 = north. Might need to be changed in case of diff number
+    if abs(heading) <= 265 or abs(heading) >= 275:
+        return angleToSouth # turn
     else:
         return 2 # open gate
 
@@ -63,7 +60,7 @@ def calculateCommandToGoal(frame, debugFrame, isHeadedStraight):
     angle = get_desired_heading(mid_e, robot, heading) # Change is west is big goal
     dist = getDistance(robot, mid_e) # Change if west is big goal
     if dist < 150 and not isHeadedStraight:
-        return setupDelivery(robot, heading)
+        return setupDelivery(robot, angle)
 
     elif abs(angle) >= 5:
         return angle

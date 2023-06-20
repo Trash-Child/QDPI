@@ -60,7 +60,7 @@ def main():
     else:
         vid = cv2.VideoCapture(0)
 
-    SERVER_IP = '169.254.38.172'  # EV3's IP address. default: 192.168.43.184
+    SERVER_IP = '192.168.43.184'  # EV3's IP address. default: 192.168.43.184
     SERVER_PORT = 1234  # The same port used by the EV3's server.
     client_socket = start_client(SERVER_IP, SERVER_PORT)
     cmd = ""
@@ -68,9 +68,10 @@ def main():
     while True:
         try:
             if noBalls:
-                # TODO: change the main loop
                 frame, debugFrame = readFrame(vid)
                 cmd = calculateCommandToGoal(frame, debugFrame, False)
+                cv2.imshow('debugFrame', debugFrame)
+                cv2.waitKey(1)
                 if cmd == 2:
                     noBalls = False
                 
@@ -96,6 +97,8 @@ def main():
                 reply = send_data(client_socket, dist)
                 print('Sent', dist)
 
+            if cmd == 2:
+                noBalls = False
             print('Waiting for command execution...')
             while reply != 'Command executed':
                 reply = client_socket.recv(1024).decode()

@@ -84,6 +84,10 @@ def handle_data(data, client_socket):
         return "Command executed"
 
     elif data >= 5 or data <= -5:
+        if data > 180:
+            data = data - 360
+        elif data < -180:
+            data = data + 360
         print("Turning", data)
         qdpi.turn(data)
         return "Command executed"
