@@ -1,10 +1,12 @@
 from movementLogic import calculateCommand, getDistance, distanceToBall, calculateCommandToGoal 
-from BallAnalysis import findRobot																
+from BallAnalysis import findRobot
+import cv2
+from ObstacleAnalysis import detectX																
 
 # Define constants
 safetydistance = 50
 
-
+''' MANUAL TEST CODE
 side, safe = getRobotSide(x_limits)
 print(side)
 print(safe)
@@ -14,9 +16,9 @@ print("getsafe says:")
 print(getSafe(side))
 
 print("avoidObstacle Says:")
+'''
 
-
-def getRobotSide(x_limits): # x_limits is list [lo_x, hi_x, lo_y, hi_y]. Returns side as char (w,e,n,s) and safe as bool (0,1)
+def getRobotSide(x_limits): # x_limits is list [lo_x, hi_x, lo_y, hi_y]. Returns side as char (w,e,n,s) 
 	robotXY, robotHeading = findRobot(frame, debugFrame) 
 	
 	side = 'x'
@@ -89,9 +91,10 @@ def getSafe(side):
 	else: 
 		print("error in getSafe!\n")
 
-def avoidObstacle(x_limits, courselimits):
+def avoidObstacle(courselimits):
+	x_limits, running_avg = detectX(frame, debugFrame, running_avg, alpha=0.2)
 	robotXY, robotHeading = findRobot(frame, debugFrame)
-	side, safe = getRobotSide(x_limits)
+	side, safe = getRobotSide(x_limits) #safe is int (0,1 are valid values)
 	if safe == 2:
 		print("Error with safe in avoidObstacle")
 	else:
