@@ -198,6 +198,18 @@ def findRobot(frame, debugFrame):
 
     return np.array([cx, cy]), heading
 
+def isCloseToWall(cX, cY, NW, SE):
+    if NW and SE:
+    if cX < NW[0] + 30 or cY < SE[1] + 30:
+        cv2.circle(debugFrame, (cX, cY), int(r), (0, 0, 255), 2)
+        return True
+    if cX > most_frequent_se[0] - 30 or cY > most_frequent_se[1] - 30:
+        cv2.circle(debugFrame, (cX, cY), int(r), (0, 0, 255), 2)
+        return True
+
+    return False #default case
+
+
 # Function to analyze the frame and locate balls
 def analyseFrame(frame, debugFrame):
     continuous_corners = {
@@ -233,14 +245,9 @@ def analyseFrame(frame, debugFrame):
             r = np.sqrt(cv2.contourArea(cnt) / np.pi)
             if r < 3:
                 continue
-
-            if most_frequent_nw and most_frequent_se:
-                if cX < most_frequent_nw[0] + 30 or cY < most_frequent_nw[1] + 30:
-                    cv2.circle(debugFrame, (cX, cY), int(r), (0, 0, 255), 2)
-                    continue
-                if cX > most_frequent_se[0] - 30 or cY > most_frequent_se[1] - 30:
-                    cv2.circle(debugFrame, (cX, cY), int(r), (0, 0, 255), 2)
-                    continue
+            
+            if isCloseToWall(cX, cY, most_frequent_nw, most_frequent_se):
+                continue
             
             continuous_balls = update_continuous_balls((cX, cY, r), continuous_balls, position_error_margin, size_error_margin)
             cv2.circle(debugFrame, (cX, cY), int(r), (0, 255, 0), 2)
@@ -250,8 +257,8 @@ def analyseFrame(frame, debugFrame):
                 cv2.circle(debugFrame, (cX, cY), int(r) + 10, (255, 255, 0), 4)  # Draw an extra circle around the closest ball
     
     orange_ball_location = locateColoredBall(frame, [20, 150, 150], [40, 255, 255])
-    if orange_ball_location:
-        cv2.circle(debugFrame, orange_ball_location, 20, (0, 154, 255), 2)
+    if orange_ball_location and isCloseToWall(orange_ball_location[0], orange_ball_location[1], most_frequent_nw, most_frequent_se):
+        orange_ball_location = None
 
     if most_frequent_nw and most_frequent_sw:
         mid_w = ((most_frequent_nw[0] + most_frequent_sw[0]) // 2, (most_frequent_nw[1] + most_frequent_sw[1]) // 2)
