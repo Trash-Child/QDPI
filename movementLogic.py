@@ -26,7 +26,7 @@ def distanceToBall(frame, debugframe):
     dist = getDistance(target_pos, robot_pos)
     if dist > 100:
         dist = dist - 150
-    return dist
+    return dist*6/5
 
 def getDistance(target, robot):
     target_coords = np.array(target)
@@ -51,8 +51,9 @@ def get_desired_heading(target, robot_pos, robot_heading):
         desired_heading = desired_heading + 8
     #end of the new stuff 
     
-    relative_angle = (desired_heading - robot_heading - 90) % 360 #tallet som er 108 nu var engang 90. Godt at huske som base. 
-    return relative_angle 
+    relative_angle = (desired_heading - robot_heading + 180) % 360 - 180 #tallet som er 108 nu var engang 90. Godt at huske som base. 
+
+    return relative_angle - 90
 
 ''' this works enough, but trying to optimise 
     if robot_pos[1] > target[1]:
@@ -66,21 +67,28 @@ def get_desired_heading(target, robot_pos, robot_heading):
 def setupDelivery(robot, heading):
     angleToSouth = - (270 - heading) % 360 # 90 = north. Might need to be changed in case of diff number
     if abs(heading) <= 265 or abs(heading) >= 275:
+        print(heading)
+        print(angleToSouth)
         return angleToSouth # turn
     else:
         return 2 # open gate
 
 def calculateCommandToGoal(frame, debugFrame, isHeadedStraight):
-    mid_w, mid_e, _, _ = analyseFrame(frame, debugFrame)
+    # mid_w, mid_e, _, _ = analyseFrame(frame, debugFrame)
+    print(mid_e)
     robot, heading = findRobot(frame, debugFrame)
     if robot is None:
         return 404
     angle = get_desired_heading(mid_e, robot, heading) # Change is west is big goal
+    print("angle:", angle)
     dist = getDistance(robot, mid_e) # Change if west is big goal
-    if dist < 150 and not isHeadedStraight:
+    print("Dist:", dist)
+    if dist < 150:
+        if dist < 40:
+            return -1
         return setupDelivery(robot, angle)
 
-    elif abs(angle) >= 5:
+    elif abs(angle) >= 5 and abs(angle) <= 355:
         return angle
     
     elif isHeadedStraight:
@@ -101,7 +109,7 @@ def calculateCommand(frame, debugFrame):
         return 404
     
     angle = get_desired_heading(target, robot, heading)
-    if abs(angle) > 5 and angle < 355: # turn if above 5 degrees
+    if abs(angle) > 5 and abs(angle) < 355: # turn if above 5 degrees
         return angle
     else:
         return 1 # go straight

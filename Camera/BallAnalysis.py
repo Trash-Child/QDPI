@@ -253,6 +253,7 @@ def analyseFrame(frame, debugFrame):
     if most_frequent_ne and most_frequent_se:
         mid_e = ((most_frequent_ne[0] + most_frequent_se[0]) // 2, (most_frequent_ne[1] + most_frequent_se[1]) // 2)
         continuous_midpoints["e"], mid_e = update_continuous_midpoints(mid_e, continuous_midpoints["e"], position_error_margin)
+        
     return mid_w, mid_e, continuous_balls, orange_ball_location
 
 
