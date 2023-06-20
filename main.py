@@ -68,6 +68,7 @@ def getDist(client_socket):
 # Function to handle the data received from the client and execute the corresponding command
 def handle_data(data, client_socket):
     data = int(data)
+    data = data % 360
     wait(1000)
     
     if data == 404:

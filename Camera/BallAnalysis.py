@@ -219,7 +219,7 @@ def analyseFrame(frame, debugFrame):
     size_error_margin = 3
     orange_ball_location = None
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-    _, thresh = cv2.threshold(gray, 220, 255, cv2.THRESH_BINARY)  # Filter out low light pixels
+    _, thresh = cv2.threshold(gray, 235, 255, cv2.THRESH_BINARY)  # Filter out low light pixels
     _, walls, continuous_corners, most_frequent_nw, most_frequent_ne, most_frequent_sw, most_frequent_se = detect_walls(frame, debugFrame, continuous_corners, position_error_margin)
     cv2.imshow('thresh', thresh)
     cv2.waitKey(1)
@@ -232,18 +232,18 @@ def analyseFrame(frame, debugFrame):
             cX = int(M["m10"] / M["m00"])
             cY = int(M["m01"] / M["m00"])
             r = np.sqrt(cv2.contourArea(cnt) / np.pi)
-            if r < 4:
+            if r < 5:
                 continue
             continuous_balls = update_continuous_balls((cX, cY, r), continuous_balls, position_error_margin, size_error_margin)
             cv2.circle(debugFrame, (cX, cY), int(r), (0, 255, 0), 2)
             cv2.circle(debugFrame, (cX, cY), 2, (0, 0, 255), 3)
 
             if closest_ball[0] and cX == closest_ball[0][0] and cY == closest_ball[0][1]:
-                cv2.circle(debugFrame, (cX, cY), int(r) + 10, (255, 0, 0), 4)  # Draw an extra circle around the closest ball
+                cv2.circle(debugFrame, (cX, cY), int(r) + 10, (255, 255, 0), 4)  # Draw an extra circle around the closest ball
     
     orange_ball_location = locateColoredBall(frame, [10, 100, 100], [20, 255, 255])
     if orange_ball_location:
-        cv2.circle(debugFrame, orange_ball_location, 5, (255, 127, 0), 4)
+        cv2.circle(debugFrame, orange_ball_location, 20, (255, 127, 0), 4)
 
     if most_frequent_nw and most_frequent_sw:
         mid_w = ((most_frequent_nw[0] + most_frequent_sw[0]) // 2, (most_frequent_nw[1] + most_frequent_sw[1]) // 2)

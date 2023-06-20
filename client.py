@@ -60,7 +60,7 @@ def main():
     else:
         vid = cv2.VideoCapture(0)
 
-    SERVER_IP = '192.168.43.81'  # EV3's IP address. default: 192.168.43.184
+    SERVER_IP = '192.168.43.184'  # EV3's IP address. default: 192.168.43.184
     SERVER_PORT = 1234  # The same port used by the EV3's server.
     client_socket = start_client(SERVER_IP, SERVER_PORT)
     cmd = ""
@@ -76,7 +76,7 @@ def main():
                 
             elif not manual:
                 frame, debugFrame = readFrame(vid)
-                cmd, dist = calculateCommand(frame, debugFrame)
+                cmd = calculateCommand(frame, debugFrame)
                 cv2.imshow('debugFrame', debugFrame)
                 cv2.waitKey(1)
             else:
@@ -86,7 +86,8 @@ def main():
             if cmd == 1:
                 if manual:
                     dist = getManualCommand()
-
+                else:
+                    dist = calculate_distance(frame, debugFrame)
                 reply = send_data(client_socket, dist)
                 print('Sent:', cmd)
 
@@ -105,7 +106,8 @@ def main():
                 print("no target found")
                 noBalls = True
 
-            # traceback.print_exc()
+            else:
+                traceback.print_exc()
 
 
     stop_capture(vid)
