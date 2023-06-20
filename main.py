@@ -45,8 +45,8 @@ def handle_client(client_socket):
         data = client_socket.recv(1024)
         if not data:
             break
-        reply = data.decode()
-        print('Server received:', reply)
+        data = data.decode()
+        print('Server received:', data)
         send_reply(client_socket, handle_data(data, client_socket))
     client_socket.close()
 
@@ -68,7 +68,6 @@ def getDist(client_socket):
 # Function to handle the data received from the client and execute the corresponding command
 def handle_data(data, client_socket):
     data = int(data)
-    data = data % 360
     wait(1000)
     
     if data == 404:
@@ -111,13 +110,6 @@ def run_server():
         print("Waiting for client...")
         client_socket, client_address = server_socket.accept()  # Wait for a new client connection
         print("Client connected:", client_address)
-        # gyro.reset_angle(0)
         data = handle_client(client_socket)
-        print('Server received:', data)
 
-# Uncomment the following two lines if running the server in a separate thread
-# server_thread = Thread(target=run_server)
-# server_thread.start()
-
-# Run the server in the main thread
 run_server()

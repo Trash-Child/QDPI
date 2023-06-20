@@ -46,7 +46,7 @@ def get_desired_heading(target, robot_pos, robot_heading):
 
 
 def setupDelivery(robot, heading):
-    angleToNorth = 90 - heading % 360 # 90 = north. Might need to be changed in case of diff number
+    angleToNorth = (180 - heading) % 360 # 90 = north. Might need to be changed in case of diff number
     if abs(angleToNorth) >= 5:
         return angleToNorth # turn
     else:
@@ -67,7 +67,7 @@ def calculateCommandToGoal(frame, debugFrame, isHeadedStraight):
         return angle
     
     elif isHeadedStraight:
-        return dist
+        return dist-100
 
     else:
         return 1
