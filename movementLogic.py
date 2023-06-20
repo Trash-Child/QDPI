@@ -41,8 +41,10 @@ def get_desired_heading(target, robot_pos, robot_heading):
     direction_vector = np.array([target[0] - robot_pos[0], target[1] - robot_pos[1]])
     desired_heading = (np.arctan2(direction_vector[1], direction_vector[0]) * 180 / np.pi +180) % 360
     relative_angle = (desired_heading - robot_heading + 180) % 360 - 180
-
-    return relative_angle-85
+        if relative_angle-85 > 180:
+             new_angle = (relative_angle+180)%360 #calculates what it should be! 
+            
+    return new_angle #it used to be the relative angle 
 
 
 def setupDelivery(robot, heading):
