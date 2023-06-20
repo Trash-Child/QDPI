@@ -24,6 +24,8 @@ def getImportantInfo(frame, debugFrame):
 def distanceToBall(frame, debugframe):
     target_pos, robot_pos, _ = getImportantInfo(frame, debugframe)
     dist = getDistance(target_pos, robot_pos)
+    if dist > 100:
+        dist = dist - 150
     return dist
 
 def getDistance(target, robot):
@@ -41,8 +43,12 @@ def get_desired_heading(target, robot_pos, robot_heading):
     direction_vector = np.array([target[0] - robot_pos[0], target[1] - robot_pos[1]])
     desired_heading = (np.arctan2(direction_vector[1], direction_vector[0]) * 180 / np.pi +180) % 360
     relative_angle = (desired_heading - robot_heading - 90) % 360
-    return relative_angle #it used to be the relative angle 
 
+    if robot_pos[1] > target[1]:
+        relative_angle = relative_angle*0.9
+    else:
+        relative_angle = relative_angle*1.1
+    return relative_angle #it used to be the relative angle 
 
 def setupDelivery(robot, heading):
     angleToSouth = - (270 - heading) % 360 # 90 = north. Might need to be changed in case of diff number
@@ -50,7 +56,6 @@ def setupDelivery(robot, heading):
         return angleToSouth # turn
     else:
         return 2 # open gate
-
 
 def calculateCommandToGoal(frame, debugFrame, isHeadedStraight):
     mid_w, mid_e, _, _ = analyseFrame(frame, debugFrame)
@@ -83,7 +88,7 @@ def calculateCommand(frame, debugFrame):
         return 404
     
     angle = get_desired_heading(target, robot, heading)
-    if abs(angle) > 5: # turn if above 5 degrees
+    if abs(angle) > 5 and angle < 355: # turn if above 5 degrees
         return angle
     else:
         return 1 # go straight

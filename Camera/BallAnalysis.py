@@ -213,13 +213,14 @@ def analyseFrame(frame, debugFrame):
         "w": [], 
         "e": []
     }
+    
     global closest_ball
     continuous_balls = []
     position_error_margin = 25
     size_error_margin = 3
     orange_ball_location = None
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-    _, thresh = cv2.threshold(gray, 235, 255, cv2.THRESH_BINARY)  # Filter out low light pixels
+    _, thresh = cv2.threshold(gray, 230, 255, cv2.THRESH_BINARY)  # Filter out low light pixels
     _, walls, continuous_corners, most_frequent_nw, most_frequent_ne, most_frequent_sw, most_frequent_se = detect_walls(frame, debugFrame, continuous_corners, position_error_margin)
     cv2.imshow('thresh', thresh)
     cv2.waitKey(1)
@@ -232,7 +233,7 @@ def analyseFrame(frame, debugFrame):
             cX = int(M["m10"] / M["m00"])
             cY = int(M["m01"] / M["m00"])
             r = np.sqrt(cv2.contourArea(cnt) / np.pi)
-            if r < 5:
+            if r < 3:
                 continue
             continuous_balls = update_continuous_balls((cX, cY, r), continuous_balls, position_error_margin, size_error_margin)
             cv2.circle(debugFrame, (cX, cY), int(r), (0, 255, 0), 2)
