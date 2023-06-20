@@ -47,16 +47,17 @@ def get_desired_heading(target, robot_pos, robot_heading):
     if robot_pos[1] > target[1]:
         relative_angle = relative_angle*0.9
     else:
-        relative_angle = relative_angle*1.1
+        relative_angle = relative_angle*1.
+        
     return relative_angle #it used to be the relative angle 
 
 def setupDelivery(robot, heading):
-    angleToSouth = - (270 - heading) % 360 # 90 = north. Might need to be changed in case of diff number
-    if abs(heading) <= 265 or abs(heading) >= 275:
-        return angleToSouth # turn
+    if heading <= 265 or heading >= 275:
+        angleRobotNeedsToTurnToFaceSouthWhichIs90
+        return (90 - heading) % 360 # turn
     else:
         return 2 # open gate
-
+  
 def calculateCommandToGoal(frame, debugFrame, isHeadedStraight):
     mid_w, mid_e, _, _ = analyseFrame(frame, debugFrame)
     robot, heading = findRobot(frame, debugFrame)
@@ -65,7 +66,7 @@ def calculateCommandToGoal(frame, debugFrame, isHeadedStraight):
     angle = get_desired_heading(mid_e, robot, heading) # Change is west is big goal
     dist = getDistance(robot, mid_e) # Change if west is big goal
     if dist < 150 and not isHeadedStraight:
-        return setupDelivery(robot, angle)
+        return setupDelivery(robot, heading)
 
     elif abs(angle) >= 5:
         return angle

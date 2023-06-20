@@ -154,8 +154,6 @@ def locateColoredBall(frame, lowerRGB, upperRGB):
 
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
     mask = cv2.inRange(hsv, lower_color, upper_color)
-    cv2.imshow('mask', mask)
-    cv2.waitKey(1)
     contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     
     for cnt in contours:
@@ -220,7 +218,7 @@ def analyseFrame(frame, debugFrame):
     size_error_margin = 3
     orange_ball_location = None
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-    _, thresh = cv2.threshold(gray, 230, 255, cv2.THRESH_BINARY)  # Filter out low light pixels
+    _, thresh = cv2.threshold(gray, 220, 255, cv2.THRESH_BINARY)  # Filter out low light pixels
     _, walls, continuous_corners, most_frequent_nw, most_frequent_ne, most_frequent_sw, most_frequent_se = detect_walls(frame, debugFrame, continuous_corners, position_error_margin)
     cv2.imshow('thresh', thresh)
     cv2.waitKey(1)
@@ -235,13 +233,15 @@ def analyseFrame(frame, debugFrame):
             r = np.sqrt(cv2.contourArea(cnt) / np.pi)
             if r < 3:
                 continue
-            
-            if most_frequent_nw:
-                if cX > most_frequent_nw - 10 or cY < most_frequent_nw + 10:
-                    continue
-                if cX < most_frequent_se + 10 or cY > most_frequent_se - 10:
-                    continue
 
+            if most_frequent_nw and most_frequent_se:
+                if cX < most_frequent_nw[0] + 30 or cY < most_frequent_nw[1] + 30:
+                    cv2.circle(debugFrame, (cX, cY), int(r), (0, 0, 255), 2)
+                    continue
+                if cX > most_frequent_se[0] - 30 or cY > most_frequent_se[1] - 30:
+                    cv2.circle(debugFrame, (cX, cY), int(r), (0, 0, 255), 2)
+                    continue
+            
             continuous_balls = update_continuous_balls((cX, cY, r), continuous_balls, position_error_margin, size_error_margin)
             cv2.circle(debugFrame, (cX, cY), int(r), (0, 255, 0), 2)
             cv2.circle(debugFrame, (cX, cY), 2, (0, 0, 255), 3)
