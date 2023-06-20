@@ -53,6 +53,14 @@ def calculateCommand(frame, debugFrame):
     if robot is None:
         return 404
     
+    # Get the obstacle information from the frame
+    try:
+        obstacle_info = getObstacleInfo(frame, debugFrame)
+    except Exception as e:
+        print(f"Error when calling getObstacleInfo: {e}")
+        return None
+
+
     angle = get_heading_to_ball(target, robot, heading)
     if abs(angle) > 5: # turn if above 5 degrees
         return angle
