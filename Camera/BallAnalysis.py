@@ -249,9 +249,9 @@ def analyseFrame(frame, debugFrame):
             if closest_ball[0] and cX == closest_ball[0][0] and cY == closest_ball[0][1]:
                 cv2.circle(debugFrame, (cX, cY), int(r) + 10, (255, 255, 0), 4)  # Draw an extra circle around the closest ball
     
-    #orange_ball_location = locateColoredBall(frame, [10, 150, 150], [20, 255, 255])
-    #if orange_ball_location:
-        #cv2.circle(debugFrame, orange_ball_location, 20, (0, 127, 255), 4)
+    orange_ball_location = locateColoredBall(frame, [20, 150, 150], [40, 255, 255])
+    if orange_ball_location:
+        cv2.circle(debugFrame, orange_ball_location, 20, (0, 154, 255), 2)
 
     if most_frequent_nw and most_frequent_sw:
         mid_w = ((most_frequent_nw[0] + most_frequent_sw[0]) // 2, (most_frequent_nw[1] + most_frequent_sw[1]) // 2)

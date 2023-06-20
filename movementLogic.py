@@ -24,8 +24,10 @@ def getImportantInfo(frame, debugFrame):
 def distanceToBall(frame, debugframe):
     target_pos, robot_pos, _ = getImportantInfo(frame, debugframe)
     dist = getDistance(target_pos, robot_pos)
-    if dist > 100:
-        dist = dist - 150
+    if dist > 150:
+        dist = dist - 100
+    elif dist <= 150:
+        dist = 200
     return dist
 
 def getDistance(target, robot):
