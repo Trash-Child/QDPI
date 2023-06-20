@@ -42,13 +42,26 @@ def get_desired_heading(target, robot_pos, robot_heading):
 
     direction_vector = np.array([target[0] - robot_pos[0], target[1] - robot_pos[1]])
     desired_heading = (np.arctan2(direction_vector[1], direction_vector[0]) * 180 / np.pi +180) % 360
-    relative_angle = (desired_heading - robot_heading - 90) % 360
+    
+    #the new stuff 
+    if desired_heading <= 25 and desired_heading >= 335:
+        desired_heading = desired_heading - 18
+    
+    elif desired_heading <= 155 and desired_heading <= 205: 
+        desired_heading = desired_heading + 8
+    #end of the new stuff 
+    
+    relative_angle = (desired_heading - robot_heading - 90) % 360 #tallet som er 108 nu var engang 90. Godt at huske som base. 
+    return relative_angle 
 
+''' this works enough, but trying to optimise 
     if robot_pos[1] > target[1]:
-        relative_angle = relative_angle*0.9
-    else:
         relative_angle = relative_angle*1.1
-    return relative_angle #it used to be the relative angle 
+    else:
+        relative_angle = relative_angle*0.9
+    return relative_angle 
+'''
+
 
 def setupDelivery(robot, heading):
     angleToSouth = - (270 - heading) % 360 # 90 = north. Might need to be changed in case of diff number

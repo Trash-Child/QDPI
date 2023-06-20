@@ -60,7 +60,7 @@ def main():
     else:
         vid = cv2.VideoCapture(0)
 
-    SERVER_IP = '192.168.43.184'  # EV3's IP address. default: 192.168.43.184
+    SERVER_IP = '192.168.43.184'  # EV3's IP address. default: 192.168.43.184 #bertram server ip: 172.20.10.4
     SERVER_PORT = 1234  # The same port used by the EV3's server.
     client_socket = start_client(SERVER_IP, SERVER_PORT)
     cmd = ""
@@ -115,6 +115,7 @@ def main():
                 noBalls = True
 
             else:
+
                 traceback.print_exc()
 
 
