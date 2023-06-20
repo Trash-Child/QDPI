@@ -4,7 +4,7 @@ import cv2
 from ObstacleAnalysis import detectX																
 
 # Define constants
-safetydistance = 50
+
 
 ''' MANUAL TEST CODE
 side, safe = getRobotSide(x_limits)
@@ -91,8 +91,8 @@ def getSafe(side):
 	else: 
 		print("error in getSafe!\n")
 
-def avoidObstacle(courselimits):
-	x_limits, running_avg = detectX(frame, debugFrame, running_avg, alpha=0.2)
+def avoidObstacle(course_limits):
+	x_limits, running_avg, lineVectors = detectX(frame, debugFrame, running_avg, alpha=0.2) #lineVectors is not used in this
 	robotXY, robotHeading = findRobot(frame, debugFrame)
 	side, safe = getRobotSide(x_limits) #safe is int (0,1 are valid values)
 	if safe == 2:
