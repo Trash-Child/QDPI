@@ -70,25 +70,25 @@ def getSafe(side):
 		if robotHeading < 90 or robotHeading > 270: #facing X
 			return -1 	# reverse 100
 		else:
-			return 3	# forward 100
+			return 3, 0	# forward 100
 
 	elif side == 'e':
 		if robotHeading > 90 and robotHeading < 270: #facing X
 			return -1 	# reverse 100
 		else:
-			return 3	# forward 100
+			return 3, 0	# forward 100
 	
 	elif side == 'n': 		#facing X						
 		if robotHeading > 180:
 			return -1
 		else:
-			return 3
+			return 3, 0
 
 	elif side == 's':
 		if robotHeading < 180: #facing X
 			return -1
 		else:
-			return 3
+			return 3, 0
 	
 	else: 
 		print("error in getSafe!\n")
