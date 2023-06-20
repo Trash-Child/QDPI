@@ -1,5 +1,5 @@
 from Camera.BallAnalysis import analyseFrame, locate_nearest_ball, findRobot, getCorners
-from ObstacleAnalysis import detectX
+from Camera.ObstacleAnalysis import detectX
 import cv2
 import math
 import numpy as np
