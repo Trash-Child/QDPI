@@ -21,14 +21,16 @@ def getImportantInfo(frame, debugFrame):
     robot = int(robot[0]), int(robot[1])
     return target, robot, heading
 
-def calculate_distance(frame, debugframe):
+def distanceToBall(frame, debugframe):
     target_pos, robot_pos, _ = getImportantInfo(frame, debugframe)
-    robot_coords = np.array(robot_pos)
-    target_coords = np.array(target_pos)
-    difference = robot_coords - target_coords
-    # Pythagorean theorem
-    distance = np.sqrt(np.sum(np.square(difference)))
+    dist = getDistance(target_pos, robot_pos)
+    return dist
 
+def getDistance(target, robot):
+    target_coords = np.array(target)
+    robot_coords = np.array(robot)
+    difference = robot_coords - target_coords
+    distance = np.sqrt(np.sum(np.square(difference)))
     return distance
 
 # This function calculates the angle between three points.
@@ -51,19 +53,24 @@ def setupDelivery(robot, heading):
         return 2 # open gate
 
 
-def calculateCommandToGoal(frame, debugFrame):
-    mid_w, mide, _, _ = analyseFrame(frame, debugFrame, noBalls)
+def calculateCommandToGoal(frame, debugFrame, isHeadedStraight):
+    mid_w, mid_e, _, _ = analyseFrame(frame, debugFrame)
     robot, heading = findRobot(frame, debugFrame)
     if robot is None:
         return 404
     angle = get_desired_heading(mid_e, robot, heading) # Change is west is big goal
-    # dist = calculate_distance(robot, mid_e) # Change if west is big goal
-    if dist < 50:
+    dist = getDistance(robot, mid_e) # Change if west is big goal
+    if dist < 150 and not isHeadedStraight:
         return setupDelivery(robot, heading)
+
     elif abs(angle) >= 5:
         return angle
+    
+    elif isHeadedStraight:
+        return dist
+
     else:
-        return 1, dist
+        return 1
 
 # This function calculates the command based on the given frame.
 # It calls the getImportantInfo function to extract the necessary information.

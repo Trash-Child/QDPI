@@ -59,10 +59,10 @@ def getDist(client_socket):
     if not dist:
         print("dist error")
         return 0
-    if dist < 250:
+    if dist < 200:
         return 300
     else:
-        return (dist*26/10)-100
+        return (dist*13/4)-100 # Calibrate first
 
 
 # Function to handle the data received from the client and execute the corresponding command

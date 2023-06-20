@@ -1,6 +1,6 @@
 import socket
 import cv2
-from movementLogic import calculateCommand, calculate_distance, calculateCommandToGoal
+from movementLogic import calculateCommand, getDistance, distanceToBall, calculateCommandToGoal
 import time
 import errno
 import traceback
@@ -60,7 +60,7 @@ def main():
     else:
         vid = cv2.VideoCapture(0)
 
-    SERVER_IP = '192.168.43.184'  # EV3's IP address. default: 192.168.43.184
+    SERVER_IP = '169.254.38.172'  # EV3's IP address. default: 192.168.43.184
     SERVER_PORT = 1234  # The same port used by the EV3's server.
     client_socket = start_client(SERVER_IP, SERVER_PORT)
     cmd = ""
@@ -70,7 +70,7 @@ def main():
             if noBalls:
                 # TODO: change the main loop
                 frame, debugFrame = readFrame(vid)
-                cmd = calculateCommandToGoal(frame, debugFrame)
+                cmd = calculateCommandToGoal(frame, debugFrame, False)
                 if cmd == 2:
                     noBalls = False
                 
@@ -83,13 +83,18 @@ def main():
                 cmd = getManualCommand()
             reply = send_data(client_socket, cmd)
             print('Sent:', cmd)
-            if cmd == 1:
+            if cmd == 1 and not noBalls:
                 if manual:
                     dist = getManualCommand()
                 else:
-                    dist = calculate_distance(frame, debugFrame)
+                    dist = distanceToBall(frame, debugFrame)
                 reply = send_data(client_socket, dist)
-                print('Sent:', cmd)
+                print('Sent:', dist)
+
+            if cmd == 1 and noBalls:
+                dist = calculateCommandToGoal(frame, debugFrame, True)
+                reply = send_data(client_socket, dist)
+                print('Sent', dist)
 
             print('Waiting for command execution...')
             while reply != 'Command executed':
