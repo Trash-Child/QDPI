@@ -116,7 +116,7 @@ def calculateCommand(frame, debugFrame):
                     return 1 # go straight
             else:
             # Continue with waypoints
-            pass  # Your current logic for handling waypoints
+                pass  # Your current logic for handling waypoints
 
         except Exception as e:
             print(f"Error when calling avoidObstacles: {e}")
@@ -223,7 +223,7 @@ def avoidObstacles(frame, debugFrame, robot, target, line_vectors, heading, clie
                 move_command = 1
                 executeCommand(client_socket, move_command)
 
-            else:  # Obstacle is to the right
+            # else # Obstacle is to the right
                 # Turn towards top of frame
                 
 
