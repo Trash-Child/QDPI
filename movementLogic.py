@@ -100,6 +100,8 @@ def calculateCommand(frame, debugFrame):
         return 404
     
     angle = get_desired_heading(target, robot, heading)
+	
+
     if abs(angle) > 5 and angle < 355: # turn if above 5 degrees
         return angle
     else:
@@ -195,25 +197,25 @@ def getSafe(side):
 		if robotHeading < 90 or robotHeading > 270: #facing X
 			return -1 	# reverse 100
 		else:
-			return 3, 0	# forward 100
+			return 3
 
 	elif side == 'e':
 		if robotHeading > 90 and robotHeading < 270: #facing X
 			return -1 	# reverse 100
 		else:
-			return 3, 0	# forward 100
+			return 3
 	
 	elif side == 'n': 		#facing X						
 		if robotHeading > 180:
 			return -1
 		else:
-			return 3, 0
+			return 3
 
 	elif side == 's':
 		if robotHeading < 180: #facing X
 			return -1
 		else:
-			return 3, 0
+			return 3
 	
 	else: 
 		print("error in getSafe!\n")
@@ -229,7 +231,7 @@ def avoidObstacle(course_limits):
 			return getSafe(side)
 	
 	if side == 'e':
-		if robotHeading < 88 or robotHeading > 92:	# Heading is not north
+		if robotHeading < 85 or robotHeading > 95:	# Heading is not north
 			desired_heading = 90
 			relative_angle = (desired_heading - robotHeading + 180) % 360 - 180
 			return relative_angle
@@ -238,7 +240,7 @@ def avoidObstacle(course_limits):
 			return 3, manualDistance
 	
 	elif side == 'n':
-		if robotHeading < 178 or robotheading > 182: # Heading is not west
+		if robotHeading < 175 or robotheading > 185: # Heading is not west
 			desired_heading = 180
 			relative_angle = (desired_heading - robotHeading + 180) % 360 - 180
 			return relative_angle
@@ -247,7 +249,7 @@ def avoidObstacle(course_limits):
 			return 3, manualDistance
 	
 	elif side == 'w':
-		if robotHeading < 268 or robotHeading > 272: # heading is not south
+		if robotHeading < 265 or robotHeading > 275: # heading is not south
 			desired_heading = 270
 			relative_angle = (desired_heading - robotHeading + 180) % 360 - 180
 			return relative_angle
@@ -256,7 +258,7 @@ def avoidObstacle(course_limits):
 			return 3, manualDistance
 	
 	elif side == 's':
-		if robotHeading > 2 and robotHeading < 358: # heading is not east
+		if robotHeading > 5 and robotHeading < 355: # heading is not east
 			desired_heading = 0
 			relative_angle = (desired_heading - robotHeading + 180) % 360 - 180
 			return relative_angle
