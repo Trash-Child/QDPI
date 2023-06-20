@@ -68,12 +68,10 @@ def get_heading_to_ball(ball, robot_pos, robot_heading):
 
     return relative_angle-85
 
-waypoints = []  # Global list to hold the waypoints
-turn_completed = False  # Global flag to indicate if a turn has been completed
-threshold_distance = 10  # Threshold distance to consider a waypoint as reached
+intersections = False  # Global boolean if obstacle in the way
 
 def calculateCommand(frame, debugFrame):
-    global waypoints  # Declare waypoints as global
+    global intersections  # Declare intersections as global
 
     # Extract important information from the frame
     try:
@@ -90,21 +88,21 @@ def calculateCommand(frame, debugFrame):
 
     # Get the obstacle information from the frame
     try:
-        obstacle_info = getObstacleInfo(frame, debugFrame)
+        lineVectors = getObstacleInfo(frame, debugFrame)
     except Exception as e:
         print(f"Error when calling getObstacleInfo: {e}")
         return None
 
     # If obstacle info is None, return None
-    if obstacle_info is None:
+    if lineVectors is None:
         print("Skipping iteration due to missing obstacle information.")
         return None
 
-    # If there are no waypoints, go to ball
-    if not waypoints:
+    # If there are no intersections, go to ball
+    if intersections == False:
         try:
-            waypoints = avoidObstacles(frame, debugFrame, robot, target, line_vectors, heading)
-            if waypoints is None:
+            intersections = avoidObstacles(frame, debugFrame, robot, target, line_vectors, heading)
+            if intersections == True:
                 target, robot, heading = getImportantInfo(frame, debugFrame)
                 if robot is None:
                     return 404
@@ -114,40 +112,10 @@ def calculateCommand(frame, debugFrame):
                     return angle
                 else:
                     return 1 # go straight
-            else:
-            # Continue with waypoints
-                pass  # Your current logic for handling waypoints
 
         except Exception as e:
-            print(f"Error when calling avoidObstacles: {e}")
+            print(f"Error when moving to ball without obstacle {e}")
             return None
-
-    # Get the first waypoint and its heading
-    waypoint, waypoint_heading = waypoints[0]
-
-    # Compute the heading to the waypoint
-    try:
-        angle = get_heading_to_ball(waypoint, robot, robot_heading)
-    except Exception as e:
-        print(f"Error when calculating turning angle: {e}")
-        return None
-
-    # If the robot is close enough to the waypoint
-    if math.hypot(waypoint[0] - robot[0], waypoint[1] - robot[1]) < 10:
-        # And if within the threshold angle
-        if abs(angle) <= 1:
-            # Remove this waypoint from the list
-            waypoints.pop(0)
-
-    # If the absolute angle is above 5 degrees, turn towards waypoint/target
-    try:
-        if abs(angle) > 5:
-            return angle
-        else:  # Otherwise, go straight
-            return 1
-    except Exception as e:
-        print(f"Error occurred during command decision: {e}")
-        return None
 
 # Function to extract obstacle information from the frame
 def getObstacleInfo(frame, debugFrame):
@@ -183,12 +151,23 @@ def lineIntersection(line1, line2):
     # Return the intersection point
     return x, y
 
-def avoidObstacles(frame, debugFrame, robot, target, line_vectors, heading, client_socket):
+def turnNorth(heading):
+    # The desired heading is 90 degrees
+    desired_heading = 90
+
+    # Compute the relative angle to the current heading of the robot, and make sure it is within [-180, 180)
+    relative_angle = (desired_heading - heading + 180) % 360 - 180
+    
+    # Return the relative angle
+    return relative_angle    
+
+def avoidObstacles(frame, debugFrame, robot, target, line_vectors, heading):
     # The path from the robot to the target is initially a straight line
     path = (robot, target)
 
-    # Start with the robot's initial position and its current heading
-    waypoints = [(robot, heading)]
+    global intersections  # Declare intersections as global
+
+    commands = []  # List to store the commands
 
     # Check if the path intersects with any of the obstacles
     for obstacleLine in line_vectors:
@@ -196,64 +175,38 @@ def avoidObstacles(frame, debugFrame, robot, target, line_vectors, heading, clie
 
         # If there is an intersection point, we need to adjust our path
         if intersection_point is not None and intersection_point is not False:
-        # Determine the direction of the obstacle relative to the robot
+            intersections = True
+            # Turn towards top of frame
+            turn_command = turnNorth(heading)
+            commands.append(turn_command)
+            
+            # Determine the direction of the obstacle relative to the robot
             if intersection_point[0] < robot[0]:  # Obstacle is to the left
-                # Turn towards top of frame
-                # Execute the turn command
-                turn_command = 90
-                executeCommand(client_socket, turn_command)
-
-                # Move forward to avoid obstacle
+                # Move forward towards top frame
                 move_command = 1
-                executeCommand(client_socket, move_command)
-
-                # Turn right
-                turn_command = 90
-                executeCommand(client_socket, turn_command)
-
-                # Move forward to complete the half square path
-                move_command = 1
-                executeCommand(client_socket, move_command)
-
-                # Turn downwards to go towards the ball
-                turn_command = 90
-                executeCommand(client_socket, turn_command)
-
-                # Move forward to go around the obstacle
-                move_command = 1
-                executeCommand(client_socket, move_command)
-
-            # else # Obstacle is to the right
-                # Turn towards top of frame
-                
-
-                # Move forward to avoid obstacle
-                
+                commands.append(move_command)
 
                 # Turn left
-                
+                turn_command = 180
+                commands.append(turn_command)
+
+                # Move forward twice to complete the half square path
+                move_command = 1
+                commands.append(move_command)
+                commands.append(move_command)
+            else: # Obstacle is to the right
+                # Move forward to avoid obstacle
+                move_command = 1
+                commands.append(move_command)
+
+                # Turn right
+                turn_command = 0
+                commands.append(turn_command)
 
                 # Move forward to complete the half square path
+                move_command = 1
+                commands.append(move_command)
+                commands.append(move_command)
+    return commands
+
                 
-
-                # Turn downwards to go towards the ball
-                
-
-                # Move forward to go around the obstacle
-                
-
-            # After avoiding the obstacle, robot should head towards the target
-            path = (waypoint, target)
-            heading = get_heading_to_ball(target, robot, waypoint_heading)
-
-    # If there were no intersection points, return None or empty list
-    if len(waypoints) == 1:
-        return None
-
-    # Add the target to the list of waypoints
-    target_heading = get_heading_to_ball(target, robot, heading)
-    waypoints.append((target, target_heading))
-
-    return waypoints
-
-
