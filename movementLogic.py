@@ -6,7 +6,9 @@ import numpy as np
 
 
 # CONSTANTS
-safetydistance = 50
+safetydistance = 40
+NW = (0,0)
+SE = (0,0)
 
 # This function extracts important information from a frame captured by a camera.
 # It analyzes the frame to locate white balls, orange balls, green balls, and blue balls.
@@ -107,7 +109,7 @@ def calculateCommand(frame, debugFrame):
         else:
             return 1 # go straight
     else:
-        avoidObstacle(x_limits)
+        avoidObstacle(x_limits, NW, SE)
 
 # Function to check if two lines intersect
 def lineIntersection(line1, line2):
@@ -222,7 +224,7 @@ def getSafe(side):
 	else: 
 		print("error in getSafe!\n")
 
-def avoidObstacle(x_limits):
+def avoidObstacle(x_limits, NW, SE):
 	robotXY, robotHeading = findRobot(frame, debugFrame)
 	side, safe = getRobotSide(x_limits) #safe is int (0,1 are valid values)
 	course_limits = [0,0,0,0]
