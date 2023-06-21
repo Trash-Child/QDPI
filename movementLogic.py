@@ -32,10 +32,10 @@ def distanceToBall(frame, debugframe):
 
 def getDistance(target, robot, heading):
     target_coords = np.array(target)
+    target_coords = checkDistCollision(distance, heading, NW, SE) #check target coords are within bounds
     robot_coords = np.array(robot)
     difference = robot_coords - target_coords
     distance = np.sqrt(np.sum(np.square(difference)))
-    distance = checkDistCollision(distance, heading, NW = (89, 4), SE = (565, 436))
     return distance
 
 # This function calculates the angle between three points.
@@ -132,9 +132,9 @@ def checkDistCollision(dist, robotHeading, NW, SE):
 		diff = targetY - (SE[1]+safetyDistance)
 		targetY = targetY - diff
 	
-	newDist = np.sqrt(targetX**2 + targetY**2) # If target is within bounds, distance remains the same
+	# newDist = np.sqrt(targetX**2 + targetY**2) # If target is within bounds, distance remains the same
 
-	return newDist
+	return np.array([targetX,targetY])
 
 
 
