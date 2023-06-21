@@ -114,32 +114,28 @@ def calculateCommand(frame, debugFrame):
         return 1 # go straight
 
 def checkDistCollision(target_coords, NW, SE):
-	safetyDistance = 40
-	
+    safetyDistance = 40
     targetX = target_coords[0]
-    targetX = target_coords[1]
-	# targetX = dist*np.cos(robotHeading)
-	# targetY = dist*np.sin(robotHeading)
+    targetY = target_coords[1]
 
-	if targetX < NW[0]+safetyDistance: # target is too far west
-		diff = (NW[0]+safetyDistance) - targetX
-		targetX = targetX + diff
+    if targetX < NW[0]+safetyDistance: # target is too far west
+	    diff = (NW[0]+safetyDistance) - targetX
+	    targetX = targetX + diff
 	
-	elif targetX > SE[0]-safetyDistance: # target is too far east
-		diff = targetX - (SE[0]-safetyDistance)
-		targetX = targetX - diff
-
-	if targetY < NW[1]+safetyDistance: # target is too far north
-		diff = (NW[1]+safetyDistance) - targetY
-		targetY = targetY + diff
+    elif targetX > SE[0]-safetyDistance: # target is too far east
+        diff = targetX - (SE[0]-safetyDistance)
+        targetX = targetX - diff
+    
+    if targetY < NW[1]+safetyDistance: # target is too far north
+        diff = (NW[1]+safetyDistance) - targetY
+        targetY = targetY + diff
 	
-	elif targetY > SE[1]+safetyDistance: # target is too far south
-		diff = targetY - (SE[1]+safetyDistance)
-		targetY = targetY - diff
+    elif targetY > SE[1]+safetyDistance: # target is too far south
+        diff = targetY - (SE[1]+safetyDistance)
+        targetY = targetY - diff
 	
 	# newDist = np.sqrt(targetX**2 + targetY**2) # If target is within bounds, distance remains the same
-
-	return np.array([targetX,targetY])
+    return np.array([targetX,targetY])
 
 
 
