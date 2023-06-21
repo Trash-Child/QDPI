@@ -8,7 +8,7 @@ import numpy as np
 # It then finds the nearest white ball and the nearest robot ball.
 # If any of the required information is missing, it returns None.
 def getImportantInfo(frame, debugFrame):
-    _, _, white_balls, orange = analyseFrame(frame, debugFrame)
+    _, _, white_balls, orange = analyseFrame(frame, debugFrame, False)
     robot, heading = findRobot(frame, debugFrame)
     target = locate_nearest_ball(white_balls, orange, robot)
 
@@ -70,7 +70,7 @@ def setupDelivery(robot, heading):
         return angleToSouth
 
 def calculateCommandToGoal(frame, debugFrame, isHeadedStraight):
-    mid_w, mid_e, _, _ = analyseFrame(frame, debugFrame)
+    mid_w, mid_e, _, _ = analyseFrame(frame, debugFrame, False)
     print(mid_e)
     robot, heading = findRobot(frame, debugFrame)
     if robot is None:

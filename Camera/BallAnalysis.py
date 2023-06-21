@@ -210,7 +210,7 @@ def isCloseToWall(cX, cY, NW, SE):
 '''
 
 # Function to analyze the frame and locate balls
-def analyseFrame(frame, debugFrame):
+def analyseFrame(frame, debugFrame, calibrate):
     NW = (89, 4) # CHANGE THIS
     SE = (656, 445) # CHANGE THIS
     continuous_corners = {
@@ -268,10 +268,10 @@ def analyseFrame(frame, debugFrame):
     if most_frequent_ne and most_frequent_se:
         mid_e = ((most_frequent_ne[0] + most_frequent_se[0]) // 2, (most_frequent_ne[1] + most_frequent_se[1]) // 2)
         continuous_midpoints["e"], mid_e = update_continuous_midpoints(mid_e, continuous_midpoints["e"], position_error_margin)
-    '''    
-    if input("Calibration = 1, delete this after): ") == '1':
+      
+    if calibration:
         return most_frequent_nw, most_frequent_se
-    '''
+    
     if NW and SE:
         mid_w = SE[0], NW[1]+SE[1]/2
     return mid_w, mid_e, continuous_balls, orange_ball_location

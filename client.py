@@ -58,7 +58,7 @@ def calibrate():
     while True:
         ret, frame = vid.read()
         ret1, debugFrame = vid.read()
-        NW, SE = analyseFrame(frame, debugFrame)
+        NW, SE = analyseFrame(frame, debugFrame, True)
         print('NW:', NW, ' SE:', SE)
 
     
