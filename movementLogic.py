@@ -22,19 +22,20 @@ def getImportantInfo(frame, debugFrame):
     return target, robot, heading
 
 def distanceToBall(frame, debugframe):
-    target_pos, robot_pos, _ = getImportantInfo(frame, debugframe)
-    dist = getDistance(target_pos, robot_pos)
+    target_pos, robot_pos, heading = getImportantInfo(frame, debugframe)
+    dist = getDistance(target_pos, robot_pos, heading)
     if dist > 150:
         dist = dist - 100
     elif dist <= 150:
         dist = 200
     return dist
 
-def getDistance(target, robot):
+def getDistance(target, robot, heading):
     target_coords = np.array(target)
     robot_coords = np.array(robot)
     difference = robot_coords - target_coords
     distance = np.sqrt(np.sum(np.square(difference)))
+    distance = checkDistCollision(distance, heading, NW = (89, 4), SE = (565, 436))
     return distance
 
 # This function calculates the angle between three points.
@@ -116,22 +117,22 @@ def checkDistCollision(dist, robotHeading, NW, SE):
 	targetY = dist*np.sin(robotHeading)
 
 	if targetX < NW[0]+safetyDistance: # target is too far west
-		diff = (NW[0]+safetydistance) - targetX
+		diff = (NW[0]+safetyDistance) - targetX
 		targetX = targetX + diff
 	
-	elif targetX > SE[0]-safetydistance: # target is too far east
-		diff = targetX - (SE[0]-safetydistance)
+	elif targetX > SE[0]-safetyDistance: # target is too far east
+		diff = targetX - (SE[0]-safetyDistance)
 		targetX = targetX - diff
 
-	if targetY < NW[1]+safetydistance: # target is too far north
-		diff = (NW[1]+safetydistance) - targetY
+	if targetY < NW[1]+safetyDistance: # target is too far north
+		diff = (NW[1]+safetyDistance) - targetY
 		targetY = targetY + diff
 	
-	elif targetY > SE[1]+safetydistance: # target is too far south
-		diff = targetY - (SE[1]+safetydistance)
+	elif targetY > SE[1]+safetyDistance: # target is too far south
+		diff = targetY - (SE[1]+safetyDistance)
 		targetY = targetY - diff
 	
-	newDist = sqrt(targetX**2 + targetY**2)
+	newDist = np.sqrt(targetX**2 + targetY**2) # If target is within bounds, distance remains the same
 
 	return newDist
 
