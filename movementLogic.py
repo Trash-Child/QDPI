@@ -3,6 +3,9 @@ import cv2
 import math
 import numpy as np
 
+NW = (0,0) # SET MANUALLY
+SE = (0,0) # SET MANUALLY
+
 # This function extracts important information from a frame captured by a camera.
 # It analyzes the frame to locate white balls, orange balls, green balls, and blue balls.
 # It then finds the nearest white ball and the nearest robot ball.
