@@ -32,9 +32,10 @@ def distanceToBall(frame, debugframe):
 
 def getDistance(target, robot, heading):
     target_coords = np.array(target)
-    target_coords = checkDistCollision(distance, heading, NW, SE) #check target coords are within bounds
     robot_coords = np.array(robot)
     difference = robot_coords - target_coords
+    distance = np.sqrt(np.sum(np.square(difference)))
+    target_coords = checkDistCollision(distance, heading, NW, SE) #check target coords are within bounds
     distance = np.sqrt(np.sum(np.square(difference)))
     return distance
 
