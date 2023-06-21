@@ -33,9 +33,8 @@ def distanceToBall(frame, debugframe):
 def getDistance(target, robot, heading):
     target_coords = np.array(target)
     robot_coords = np.array(robot)
+    target_coords = checkDistCollision(target_coords, NW, SE) #check target coords are within bounds
     difference = robot_coords - target_coords
-    distance = np.sqrt(np.sum(np.square(difference)))
-    target_coords = checkDistCollision(distance, heading, NW, SE) #check target coords are within bounds
     distance = np.sqrt(np.sum(np.square(difference)))
     return distance
 
@@ -111,11 +110,13 @@ def calculateCommand(frame, debugFrame):
     else:
         return 1 # go straight
 
-def checkDistCollision(dist, robotHeading, NW, SE):
+def checkDistCollision(target_coords, NW, SE):
 	safetyDistance = 40
 	
-	targetX = dist*np.cos(robotHeading)
-	targetY = dist*np.sin(robotHeading)
+    targetX = target_coords[0]
+    targetX = target_coords[1]
+	# targetX = dist*np.cos(robotHeading)
+	# targetY = dist*np.sin(robotHeading)
 
 	if targetX < NW[0]+safetyDistance: # target is too far west
 		diff = (NW[0]+safetyDistance) - targetX
