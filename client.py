@@ -74,6 +74,7 @@ def main():
     client_socket = start_client(SERVER_IP, SERVER_PORT)
     cmd = ""
     noBalls = False
+    counter = 0
     while True:
         try:
             if noBalls:
@@ -93,6 +94,10 @@ def main():
                 cmd = getManualCommand()
             reply = send_data(client_socket, cmd)
             print('Sent:', cmd)
+            counter +=1
+            if counter > 10:
+                counter = 0
+                noBalls = True
             if cmd == 1 and not noBalls:
                 if manual:
                     dist = getManualCommand()
