@@ -197,9 +197,8 @@ def findRobot(frame, debugFrame):
     heading = (np.arctan2(blue_dot[1] - green_dot[1], blue_dot[0] - green_dot[0]) * 180 / np.pi) % 360
 
     return np.array([cx, cy]), heading
-
+'''
 def isCloseToWall(cX, cY, NW, SE):
-    if NW and SE:
     if cX < NW[0] + 30 or cY < SE[1] + 30:
         cv2.circle(debugFrame, (cX, cY), int(r), (0, 0, 255), 2)
         return True
@@ -208,12 +207,12 @@ def isCloseToWall(cX, cY, NW, SE):
         return True
 
     return False #default case
-
+'''
 
 # Function to analyze the frame and locate balls
 def analyseFrame(frame, debugFrame):
-    NW = None # CHANGE THIS
-    SE = None # CHANGE THIS
+    NW = (89, 4) # CHANGE THIS
+    SE = (656, 445) # CHANGE THIS
     continuous_corners = {
         "nw": [], 
         "ne": [], 
@@ -247,10 +246,10 @@ def analyseFrame(frame, debugFrame):
             r = np.sqrt(cv2.contourArea(cnt) / np.pi)
             if r < 3:
                 continue
-            
+            '''
             if isCloseToWall(cX, cY, most_frequent_nw, most_frequent_se):
                 continue
-            
+            '''
             continuous_balls = update_continuous_balls((cX, cY, r), continuous_balls, position_error_margin, size_error_margin)
             cv2.circle(debugFrame, (cX, cY), int(r), (0, 255, 0), 2)
             cv2.circle(debugFrame, (cX, cY), 2, (0, 0, 255), 3)
@@ -259,7 +258,7 @@ def analyseFrame(frame, debugFrame):
                 cv2.circle(debugFrame, (cX, cY), int(r) + 10, (255, 255, 0), 4)  # Draw an extra circle around the closest ball
     
     orange_ball_location = locateColoredBall(frame, [20, 150, 150], [40, 255, 255])
-    if orange_ball_location and isCloseToWall(orange_ball_location[0], orange_ball_location[1], most_frequent_nw, most_frequent_se):
+    if orange_ball_location:
         orange_ball_location = None
 
     if most_frequent_nw and most_frequent_sw:
@@ -269,10 +268,11 @@ def analyseFrame(frame, debugFrame):
     if most_frequent_ne and most_frequent_se:
         mid_e = ((most_frequent_ne[0] + most_frequent_se[0]) // 2, (most_frequent_ne[1] + most_frequent_se[1]) // 2)
         continuous_midpoints["e"], mid_e = update_continuous_midpoints(mid_e, continuous_midpoints["e"], position_error_margin)
+    '''    
     if input("Calibration = 1, delete this after): ") == '1':
         return most_frequent_nw, most_frequent_se
-
-    if NE and SE:
+    '''
+    if NW and SE:
         mid_w = SE[0], NW[1]+SE[1]/2
     return mid_w, mid_e, continuous_balls, orange_ball_location
 

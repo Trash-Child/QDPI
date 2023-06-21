@@ -109,7 +109,7 @@ def calculateCommand(frame, debugFrame):
     else:
         return 1 # go straight
 
-def checkDistCollision(dist, robotHeading, NW, SE)
+def checkDistCollision(dist, robotHeading, NW, SE):
 	safetyDistance = 40
 	
 	targetX = dist*np.cos(robotHeading)
