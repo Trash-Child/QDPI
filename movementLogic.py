@@ -78,9 +78,9 @@ def calculateCommandToGoal(frame, debugFrame, isHeadedStraight):
     robot, heading = findRobot(frame, debugFrame)
     if robot is None:
         return 404
-    angle = get_desired_heading(mid_e, robot, heading) # Change is west is big goal
+    angle = get_desired_heading(mid_w, robot, heading) # Change is west is big goal
     print("angle:", angle)
-    dist = getDistance(robot, mid_e, heading)# Change if west is big goal
+    dist = getDistance(robot, mid_w, heading)# Change if west is big goal
     print("Dist:", dist)
     if dist < 150:
         if dist < 40:
