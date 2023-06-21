@@ -1,6 +1,7 @@
 import socket
 import cv2
 from movementLogic import calculateCommand, getDistance, distanceToBall, calculateCommandToGoal
+from Camera.BallAnalysis import analyseFrame
 import time
 import errno
 import traceback
@@ -52,11 +53,19 @@ def readFrame(vid):
     ret2, debugFrame = vid.read()
     return frame, debugFrame
 
+def calibrate():
+    vid = cv2.VideoCapture(0)
+    while True:
+        ret, frame = vid.read()
+        ret1, debugFrame = vid.read()
+        NW, SE = analyseFrame(frame, debugFrame)
+        print('NW:', NW, ' SE:', SE)
+
     
 def main():
     manual = False
-    if input("Press 1 for manual, or anything else to continue: ") == '1':
-        manual = True
+    if input("Press 1 for calibration ") == '1':
+        calibrate()
     else:
         vid = cv2.VideoCapture(0)
 
