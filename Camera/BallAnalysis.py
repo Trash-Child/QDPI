@@ -269,7 +269,7 @@ def analyseFrame(frame, debugFrame, calibrate):
         mid_e = ((most_frequent_ne[0] + most_frequent_se[0]) // 2, (most_frequent_ne[1] + most_frequent_se[1]) // 2)
         continuous_midpoints["e"], mid_e = update_continuous_midpoints(mid_e, continuous_midpoints["e"], position_error_margin)
       
-    if calibration:
+    if calibrate:
         return most_frequent_nw, most_frequent_se
     
     if NW and SE:
