@@ -35,6 +35,7 @@ def getDistance(target, robot):
     robot_coords = np.array(robot)
     difference = robot_coords - target_coords
     distance = np.sqrt(np.sum(np.square(difference)))
+    distance = checkDistCollision(distance, heading)
     return distance
 
 # This function calculates the angle between three points.
@@ -100,7 +101,7 @@ def calculateCommand(frame, debugFrame):
     else:
         return 1 # go straight
 
-def checkDistCollision(dist, robotHeading, NW, SE)
+def checkDistCollision(dist, robotHeading)
 	safetyDistance = 40
 	
 	targetX = dist*np.cos(robotHeading)
