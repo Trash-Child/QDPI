@@ -99,3 +99,38 @@ def calculateCommand(frame, debugFrame):
         return angle
     else:
         return 1 # go straight
+
+def checkDistCollision(dist, robotHeading, NW, SE)
+	safetyDistance = 40
+	
+	targetX = dist*np.cos(robotHeading)
+	targetY = dist*np.sin(robotHeading)
+
+	if targetX < NW[0]+safetyDistance: # target is too far west
+		diff = (NW[0]+safetydistance) - targetX
+		targetX = targetX + diff
+	
+	elif targetX > SE[0]-safetydistance: # target is too far east
+		diff = targetX - (SE[0]-safetydistance)
+		targetX = targetX - diff
+
+	if targetY < NW[1]+safetydistance: # target is too far north
+		diff = (NW[1]+safetydistance) - targetY
+		targetY = targetY + diff
+	
+	elif targetY > SE[1]+safetydistance: # target is too far south
+		diff = targetY - (SE[1]+safetydistance)
+		targetY = targetY - diff
+	
+	newDist = sqrt(targetX**2 + targetY**2)
+
+	return newDist
+
+
+
+
+
+
+
+
+
