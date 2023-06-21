@@ -3,8 +3,8 @@ import cv2
 import math
 import numpy as np
 
-NW = (0,0) # SET MANUALLY
-SE = (0,0) # SET MANUALLY
+NW = (46,45) # SET MANUALLY
+SE = (560,428) # SET MANUALLY
 
 # This function extracts important information from a frame captured by a camera.
 # It analyzes the frame to locate white balls, orange balls, green balls, and blue balls.

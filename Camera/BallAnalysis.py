@@ -211,8 +211,8 @@ def isCloseToWall(cX, cY, NW, SE):
 
 # Function to analyze the frame and locate balls
 def analyseFrame(frame, debugFrame, calibrate):
-    NW = (89, 4) # CHANGE THIS
-    SE = (656, 445) # CHANGE THIS
+    NW = (46, 45) # CHANGE THIS
+    SE = (560, 428) # CHANGE THIS
     continuous_corners = {
         "nw": [], 
         "ne": [], 
