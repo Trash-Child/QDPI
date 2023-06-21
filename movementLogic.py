@@ -123,7 +123,7 @@ def checkDistCollision(dist, robotHeading)
 		diff = targetY - (SE[1]+safetydistance)
 		targetY = targetY - diff
 	
-	newDist = sqrt(targetX**2 + targetY**2)
+	newDist = sqrt(targetX**2 + targetY**2) # If target is within bounds, distance remains the same
 
 	return newDist
 
