@@ -270,7 +270,14 @@ def analyseFrame(frame, debugFrame, calibrate):
         continuous_midpoints["e"], mid_e = update_continuous_midpoints(mid_e, continuous_midpoints["e"], position_error_margin)
       
     if calibrate:
+        if most_frequent_nw and most_frequent_se:
+            cv2.circle(debugFrame, most_frequent_nw, 10, (255, 0, 0), 3)
+            cv2.circle(debugFrame, most_frequent_se, 10, (255, 0, 0), 3)
+            cv2.imshow('debugFrame', debugFrame)
         return most_frequent_nw, most_frequent_se
+
+
+    
     
     if NW and SE:
         mid_w = SE[0], NW[1]+SE[1]/2
