@@ -1,6 +1,7 @@
 import socket
 
 # Function to start the server and bind it to a specific port
+# Anton 100%
 def start_server(port):
     print("Starting server...")
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -11,6 +12,7 @@ def start_server(port):
     return server_socket
 
 # Function to send a reply to the client
+# Anton 100%
 def send_reply(client_socket, message):
     try:
         while message:
@@ -20,6 +22,7 @@ def send_reply(client_socket, message):
         print('Error: {}'.format(e))
 
 # Function to handle the client's requests
+# Anton 100%
 def handle_client(client_socket):
     while True:
         data = client_socket.recv(1024)
@@ -31,12 +34,14 @@ def handle_client(client_socket):
     client_socket.close()
 
 # Function to handle the data received from the client and execute the corresponding command
+# Anton 100%
 def handle_data(data):
     data = int(data)
     print("Data: ", data)
     return "Command executed"
 
 # Function to run the server and handle client connections
+# Anton 100%
 def run_server():
     port = 1234
     server_socket = start_server(port)

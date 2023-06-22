@@ -5,6 +5,7 @@ from collections import Counter
 import threading
 
 # Function to update the list of continuous balls based on the detected circle
+# Anton 100%
 def update_continuous_balls(circle, continuous_balls, position_error_margin, size_error_margin, counter_threshold=10, no_match_threshold=10):
     x, y, r = circle
     updated_continuous_balls = []
@@ -30,13 +31,13 @@ def update_continuous_balls(circle, continuous_balls, position_error_margin, siz
 
     return updated_continuous_balls
 
-
+# Magnus 100%
 def most_frequent_points(point_list, error_margin):
     counter = Counter(point_list)
     frequent_points = [point for point, freq in counter.items() if freq > error_margin]
     return frequent_points
 
-
+# Magnus 100%
 def update_continuous_midpoints(midpoint, continuous_midpoints, position_error_margin, counter_threshold=10):
     x, y = midpoint
     updated_continuous_midpoints = []
@@ -60,7 +61,7 @@ def update_continuous_midpoints(midpoint, continuous_midpoints, position_error_m
     
     return updated_continuous_midpoints, most_frequent if most_frequent else (x, y)
 
-
+# Magnus 100%
 def update_continuous_corners(corner, continuous_corners, position_error_margin, counter_threshold=20, same_pos_counter_threshold=20):
     x, y = corner
     updated_continuous_corners = []
@@ -84,7 +85,7 @@ def update_continuous_corners(corner, continuous_corners, position_error_margin,
     
     return updated_continuous_corners, most_frequent if most_frequent else (x, y)
 
-
+# Magnus 100%
 def line_intersection(line1, line2):
     x1, y1, x2, y2 = line1
     x3, y3, x4, y4 = line2
@@ -100,7 +101,7 @@ def line_intersection(line1, line2):
     else:
         return None
 
-
+# Magnus 100%
 def detect_walls(frame, debugFrame, continuous_corners, position_error_margin):
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     
@@ -144,6 +145,7 @@ def detect_walls(frame, debugFrame, continuous_corners, position_error_margin):
 
     return frame, walls, continuous_corners, most_frequent_nw, most_frequent_ne, most_frequent_sw, most_frequent_se
 
+# Anton 100%
 def locateColoredBall(frame, lowerRGB, upperRGB):
     lower_color = np.array(lowerRGB)
     upper_color = np.array(upperRGB)
@@ -182,7 +184,7 @@ def locateColoredBall(frame, lowerRGB, upperRGB):
 # Global variable to store the closest ball
 closest_ball = [None]
 
-
+# Anton 100%
 def findRobot(frame, debugFrame):
     green_dot = locateColoredBall(frame, [50, 40, 40], [89, 255, 255])
     blue_dot = locateColoredBall(frame, [90, 40, 40], [105, 255, 255])
@@ -197,19 +199,9 @@ def findRobot(frame, debugFrame):
     heading = (np.arctan2(blue_dot[1] - green_dot[1], blue_dot[0] - green_dot[0]) * 180 / np.pi) % 360
 
     return np.array([cx, cy]), heading
-'''
-def isCloseToWall(cX, cY, NW, SE):
-    if cX < NW[0] + 30 or cY < SE[1] + 30:
-        cv2.circle(debugFrame, (cX, cY), int(r), (0, 0, 255), 2)
-        return True
-    if cX > most_frequent_se[0] - 30 or cY > most_frequent_se[1] - 30:
-        cv2.circle(debugFrame, (cX, cY), int(r), (0, 0, 255), 2)
-        return True
-
-    return False #default case
-'''
 
 # Function to analyze the frame and locate balls
+# Anton 60%, Magnus 40%
 def analyseFrame(frame, debugFrame, calibrate):
     NW = (46, 45) # CHANGE THIS
     SE = (560, 428) # CHANGE THIS
@@ -283,7 +275,7 @@ def analyseFrame(frame, debugFrame, calibrate):
         mid_w = SE[0], NW[1]+SE[1]/2
     return mid_w, mid_e, continuous_balls, orange_ball_location
 
-
+# Anton 100%
 def locate_nearest_ball(continuous_balls, orange_ball_location, robot):
     global closest_ball
 

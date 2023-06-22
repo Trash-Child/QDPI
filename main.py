@@ -21,6 +21,7 @@ motor_v = Motor(Port.D)
 qdpi = DriveBase(motor_l, motor_r, wheel_diameter=32.5, axle_track=204.5)
 
 # Function to start the server and bind it to a specific port
+# Anton 100%
 def start_server(port):
     print("Starting server...")
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -31,6 +32,7 @@ def start_server(port):
     return server_socket
 
 # Function to send a reply to the client
+# Anton 100%
 def send_reply(client_socket, message):
     try:
         while message:
@@ -40,6 +42,7 @@ def send_reply(client_socket, message):
         print('Error: {}'.format(e))
 
 # Function to handle the client's requests
+# Anton 100%
 def handle_client(client_socket):
     while True:
         data = client_socket.recv(1024)
@@ -51,6 +54,7 @@ def handle_client(client_socket):
     client_socket.close()
 
 # Get distance from robot center to target, to know how far to travel forward
+# Anton 100%
 def getDist(client_socket):
     print("Waiting for dist...")
     dist = client_socket.recv(1024)
@@ -66,6 +70,7 @@ def getDist(client_socket):
 
 
 # Function to handle the data received from the client and execute the corresponding command
+# Anton 100%
 def handle_data(data, client_socket):
     data = int(data)
     #wait for 1000 here 
@@ -106,6 +111,7 @@ def handle_data(data, client_socket):
     return "Command executed"
 
 # Function to run the server and handle client connections
+# Anton 100%
 def run_server():
     port = 1234
     server_socket = start_server(port)

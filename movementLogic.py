@@ -10,6 +10,7 @@ SE = (560,428) # SET MANUALLY
 # It analyzes the frame to locate white balls, orange balls, green balls, and blue balls.
 # It then finds the nearest white ball and the nearest robot ball.
 # If any of the required information is missing, it returns None.
+# Anton 100%
 def getImportantInfo(frame, debugFrame):
     _, _, white_balls, orange = analyseFrame(frame, debugFrame, False)
     robot, heading = findRobot(frame, debugFrame)
@@ -24,6 +25,7 @@ def getImportantInfo(frame, debugFrame):
     robot = int(robot[0]), int(robot[1])
     return target, robot, heading
 
+# Anton 50%, Maria 50%
 def distanceToBall(frame, debugframe):
     target_pos, robot_pos, heading = getImportantInfo(frame, debugframe)
     dist = getDistance(target_pos, robot_pos, heading)
@@ -33,6 +35,7 @@ def distanceToBall(frame, debugframe):
         dist = 200
     return dist
 
+# Anton 45%, Maria 45%, Benedicte 10%
 def getDistance(target, robot, heading):
     target_coords = np.array(target)
     robot_coords = np.array(robot)
@@ -42,6 +45,7 @@ def getDistance(target, robot, heading):
     return distance
 
 # This function calculates the angle between three points.
+# Anton 50%, Maria 50%
 def get_desired_heading(target, robot_pos, robot_heading):
     if target is None or robot_pos is None:
         return None
@@ -61,7 +65,7 @@ def get_desired_heading(target, robot_pos, robot_heading):
 
     return relative_angle - 90
 
-
+# Anton 50%, Maria 50%
 def setupDelivery(robot, heading):
 
     angleToSouth = - (270 - heading) % 360 # 90 = north. Might need to be changed in case of diff number
@@ -72,6 +76,7 @@ def setupDelivery(robot, heading):
     else:
         return angleToSouth
 
+# Anton 50%, Maria 50%
 def calculateCommandToGoal(frame, debugFrame, isHeadedStraight):
     mid_w, mid_e, _, _ = analyseFrame(frame, debugFrame, False)
     print(mid_e)
@@ -102,6 +107,7 @@ def calculateCommandToGoal(frame, debugFrame, isHeadedStraight):
 # Otherwise, it calculates the angle between the green ball, robot ball, and target ball.
 # If the angle is greater than 5 degrees, it returns the angle.
 # Otherwise, it returns 1.
+# Anton 50%, Maria 50%
 def calculateCommand(frame, debugFrame):
     target, robot, heading = getImportantInfo(frame, debugFrame)
     if robot is None:
@@ -113,6 +119,7 @@ def calculateCommand(frame, debugFrame):
     else:
         return 1 # go straight
 
+# Benedicte 100%
 def checkDistCollision(target_coords, NW, SE):
     safetyDistance = 40
     targetX = target_coords[0]

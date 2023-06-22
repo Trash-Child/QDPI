@@ -7,6 +7,7 @@ import errno
 import traceback
 
 # Function to start the client and connect to the server
+# Anton 100%
 def start_client(SERVER_IP, SERVER_PORT):
     client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     client_socket.connect((SERVER_IP, SERVER_PORT))
@@ -14,6 +15,7 @@ def start_client(SERVER_IP, SERVER_PORT):
     return client_socket
 
 # Function to send data to the server and receive a reply
+# Anton 100%
 def send_data(client_socket, data):
     if isinstance(data, int) or isinstance(data, float):
         data = round(data)
@@ -31,10 +33,12 @@ def send_data(client_socket, data):
     return reply
 
 # Function to stop capturing video
+# Anton 100%
 def stop_capture(vid):
     vid.release()
     cv2.destroyAllWindows()
 
+# Anton 100%
 def getManualCommand():
     cmd = ""
     while True:
@@ -48,11 +52,13 @@ def getManualCommand():
             print("Not an integer")
 
 
+# Anton 100%
 def readFrame(vid):
     ret, frame = vid.read()
     ret2, debugFrame = vid.read()
     return frame, debugFrame
 
+# Anton 100%
 def calibrate():
     vid = cv2.VideoCapture(0)
     while True:
@@ -61,7 +67,7 @@ def calibrate():
         NW, SE = analyseFrame(frame, debugFrame, True)
         print('NW:', NW, ' SE:', SE)
 
-    
+# Anton 100%
 def main():
     manual = False
     if input("Press 1 for calibration: ") == '1':
